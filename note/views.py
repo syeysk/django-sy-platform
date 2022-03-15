@@ -1,3 +1,5 @@
+import hashlib
+import hmac
 import os
 
 from django.conf import settings
@@ -58,6 +60,21 @@ def note_search(request, query):
 @renderer_classes((JSONRenderer,))
 def note_hook(request):
     data = {'files': {}}
+
+    true_digest = request._request.headers.get('X-Hub-Signature-256')
+    secret_key = bytes(settings.GITHUB_HOOK_SECRET_KEY, 'utf-8')
+    h = hmac.HMAC(key=secret_key, msg=request._request.body, digestmod=hashlib.sha256)
+    hash_real = true_digest.split('=')[1]
+    hash_true = h.hexdigest()
+    data['secrets'] = (hash_real, hash_true)
+    import time
+    with open(str(time.time()), 'w') as f:
+        f.write(f'{hash_real}\n{hash_true}\n\n')
+        f.write(str(request._request.body, 'utf-8'))
+    return Response(status=status.HTTP_200_OK, data=data)
+    if hash_real != hash_true:
+        return Response(status=status.HTTP_200_OK, data={'message': 'wrong secret key'})
+
     action = request._request.headers.get('X-Github-Event')
     if action == 'push':
         repository = request.data.get('repository')
