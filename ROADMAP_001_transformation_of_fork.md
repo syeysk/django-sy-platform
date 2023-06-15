@@ -9,7 +9,7 @@
 - [x] добавить статику в репозиторий. Результат: [Коммит со статикой](https://github.com/syeysk/django-sy-platform/commit/4c9a76b745e40519b791ece1967c76ce31e664ca)
 - [ ] перевести сервис на Poetry.
 - [ ] добавить в сервис мультиязычность (английский, русский).
-- [ ] выделить модуль заметок как django-sy-note.
+- [x] выделить модуль заметок как django-sy-note. Результат: https://github.com/syeysk/django-sy-notes
 - [ ] настроить докер-контейнер для микросервиса заметок (наследоваться от `FROM python:3.8.1-slim-buster`).
   - ARG, RUN, WORKDIR, CMD
 - [ ] выделить модуль токенов как django-sy-token.
