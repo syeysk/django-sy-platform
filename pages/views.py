@@ -11,27 +11,18 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework import status
 
-from note.models import Note
 from pages.serializers import ProfileViewSerializer
 
 
 class ServiceServerView(LoginRequiredMixin, APIView):
     def get(self, request):
-        context = {
-            'count_notes': Note.objects.count()
-        }
+        context = {}
         return render(request, 'pages/service_server.html', context)
 
     def post(self, request):
         command = request.POST.get('command')
         message = None
-        if command == 'update_db':
-            file_stdout = StringIO()
-            sys.stderr = file_stdout
-            sys.stdout = file_stdout
-            management.call_command('note_load', stdout=file_stdout, stderr=file_stdout)
-            message = file_stdout.getvalue()
-        elif command == 'deploy_server':
+        if command == 'deploy_server':
             message = check_output('cd .. ; git pull origin main', shell=True)
         elif command == 'restart_server':
             restart_batcmd = 'touch tmp/restart.txt'
@@ -71,7 +62,7 @@ class ProfileView(LoginRequiredMixin, APIView):
         serializer = ProfileViewSerializer(data=request.POST)
         serializer.is_valid(raise_exception=True)
         data = serializer.validated_data
-        
+
         user = request.user
         update_fields = []
         if user.first_name != data['first_name']:

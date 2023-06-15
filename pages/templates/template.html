@@ -54,15 +54,6 @@
                     </li>
                 </ul>
             </li>
-            <li class="nav-item dropdown">
-                <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown">Модули</a>
-                <ul class="dropdown-menu">
-                    {% url 'note_editor' as url %}
-                    <li>
-                        <a href="{{ url }}" class="dropdown-item{% if request.path == url %} active{% endif %}">Заметки</a>
-                    </li>
-                </ul>
-            </li>
             {# {% url 'service_server' as url %}#}
             {#<li class="nav-item">#}
             {#    <a href="{{ url }}" class="nav-link{% if request.path == url %} active{% endif %}">Обслуживание сервера</a>#}
