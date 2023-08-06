@@ -1,10 +1,11 @@
 from django.contrib import admin
 from django.urls import path, include
 
+from django_sy_framework.base import urls
+
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('auth/', include('custom_auth.urls')),
-    path('', include('pages.urls')),
     path('api/', include('django_knowledge.urls_api')),
-]
+] + urls.urlpatterns
