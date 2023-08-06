@@ -13,8 +13,8 @@ environ.Env.read_env(env_file=BASE_DIR / '.env')
 
 ALLOWED_HOSTS = env('ALLOWED_HOSTS')
 DEBUG = env('DEBUG')
-ROOT_URLCONF = 'django_knowledge.urls'
-WSGI_APPLICATION = 'django_knowledge.wsgi.application'
+ROOT_URLCONF = 'server.urls'
+WSGI_APPLICATION = 'server.wsgi.application'
 STATIC_URL = '/static/'
 SITE_URL = env('SITE_URL')
 
@@ -27,7 +27,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'django_knowledge',
+    'server',
     'custom_auth',
     'rest_framework',
     'drf_spectacular',
@@ -105,7 +105,7 @@ SPECTACULAR_SETTINGS = {
     'SERVE_INCLUDE_SCHEMA': True,
     'SCHEMA_PATH_PREFIX_INSERT': 'api',
     #'SCHEMA_PATH_PREFIX': '/api/v[0-9]',
-    'SERVE_URLCONF': 'django_knowledge.urls_api',
+    'SERVE_URLCONF': 'server.urls_api',
 }
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'

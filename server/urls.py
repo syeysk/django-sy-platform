@@ -7,5 +7,5 @@ from django_sy_framework.base import urls
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('auth/', include('custom_auth.urls')),
-    path('api/', include('django_knowledge.urls_api')),
+    path('api/', include('server.urls_api')),
 ] + urls.urlpatterns
