@@ -1,4 +1,4 @@
-from django.urls import path, include
+from django.urls import path
 from drf_spectacular.views import (
     SpectacularAPIView,
     SpectacularRedocView,
