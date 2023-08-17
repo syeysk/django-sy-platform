@@ -28,12 +28,12 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'server',
-    'custom_auth',
     'rest_framework',
     'drf_spectacular',
-    'pages',
     'django_sy_framework.base',
+    'django_sy_framework.custom_auth',
+    'server',
+    'pages',
 ]
 
 MIDDLEWARE = [
@@ -57,7 +57,7 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
-                'custom_auth.context_processors.extern_auth_services',
+                'django_sy_framework.custom_auth.context_processors.extern_auth_services',
             ],
         },
     },
@@ -118,4 +118,15 @@ EXTERN_AUTH = {
         'client_id': env('EXTERN_AUTH_GOOGLE_CLIENT_ID'),
         'client_secret': env('EXTERN_AUTH_GOOGLE_CLIENT_SECRET'),
     }
+}
+AUTH_USER_MODEL = 'custom_auth.CustomAuthUser'
+AUTHENTICATION_BACKENDS = ['django_sy_framework.custom_auth.backend.CustomAuthBackend']
+MICROSERVICES_TOKENS = {
+    'to_auth': env('MICROSERVICE_TOKEN_TO_AUTH'),
+}
+MICROSERVICES_KEYS = {
+    'auth': env('MICROSERVICE_KEY_TO_AUTH'),
+}
+MICROSERVICES_URLS = {
+    'auth': env('MICROSERVICE_URL_AUTH'),
 }
