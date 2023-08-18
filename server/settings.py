@@ -19,7 +19,8 @@ STATIC_URL = '/static/'
 SITE_URL = env('SITE_URL')
 INTERNAL_IPS = ['127.0.0.1']
 
-API_TOKEN_SALT = env('API_TOKEN_SALT')
+API_SALT = env('API_SALT')
+API_SECRET_KEY = env('API_SECRET_KEY')
 
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -123,9 +124,6 @@ AUTH_USER_MODEL = 'custom_auth.CustomAuthUser'
 AUTHENTICATION_BACKENDS = ['django_sy_framework.custom_auth.backend.CustomAuthBackend']
 MICROSERVICES_TOKENS = {
     'to_auth': env('MICROSERVICE_TOKEN_TO_AUTH'),
-}
-MICROSERVICES_KEYS = {
-    'auth': env('MICROSERVICE_KEY_TO_AUTH'),
 }
 MICROSERVICES_URLS = {
     'auth': env('MICROSERVICE_URL_AUTH'),
