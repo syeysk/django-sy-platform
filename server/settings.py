@@ -16,6 +16,7 @@ DEBUG = env('DEBUG')
 ROOT_URLCONF = 'server.urls'
 WSGI_APPLICATION = 'server.wsgi.application'
 STATIC_URL = '/static/'
+STATIC_ROOT = BASE_DIR.parent / 'static'
 SITE_URL = env('SITE_URL')
 INTERNAL_IPS = ['127.0.0.1']
 
