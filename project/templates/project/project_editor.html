@@ -1,0 +1,207 @@
+{% extends 'template.html' %}
+{% load static %}
+
+{% block title %}{{ project.title }}{% endblock %}
+{% block page_title %}Проект | {{ project.title }}{% endblock %}
+
+{% block content %}
+    <style>
+        .mb-3 {
+            margin-bottom: 0 !important;
+        }
+        .btn_edit {
+            font-size: 10px;
+            background-color: paleturquoise;
+            cursor: pointer;
+            padding: 2px 4px 2px 4px;
+            border-radius: 3px;
+        }
+    </style>
+
+    {{ project|json_script:'project_json' }}
+    <div id="app_project_id"></div>
+{% endblock %}
+
+{% block end_of_body %}
+    <script>
+        fieldInputComponent = {
+            props: ['name', 'modelValue'],
+            emits: ['update:modelValue'],
+            computed: {
+                value: {
+                    get() {
+                       return this.modelValue;
+                    },
+                    set(value) {
+                       this.$emit('update:modelValue', value);
+                    },
+                },
+            },
+            template: `
+                <div class="mb-3 form-group" :id="name + '-group'">
+                    <div class="form-floating">
+                        <input v-model="value" class="form-control" type="input" :name="name" :id="name + '-field'" v-bind="$attrs">
+                        <label :for="name + '-field'" class="form-label"><slot/></label>
+                    </div>
+                </div>
+            `,
+        }
+    </script>
+
+    <script>
+        fieldTextareaComponent = {
+            props: ['name', 'modelValue'],
+            emits: ['update:modelValue'],
+            computed: {
+                value: {
+                    get() {
+                       return this.modelValue;
+                    },
+                    set(value) {
+                       this.$emit('update:modelValue', value);
+                    },
+                },
+            },
+            template: `
+                <div class="mb-3 form-group" :id="name + '-group'">
+                    <div class="form-floating">
+                        <textarea v-model="value" :name="name" style="width: 100%;" rows="5" class="form-control" v-bind="$attrs"></textarea>
+                        <label :for="name + '-field'" class="form-label"><slot/></label>
+                    </div>
+                </div>
+            `,
+        }
+    </script>
+
+    <script>
+        FieldEditorComponent = {
+            props: ['modelValue', 'isEdit'],
+            data() {
+                return {mIsEdit: this.isEdit};
+            },
+            components: {fieldInputComponent, fieldTextareaComponent},
+            emits: ['update:modelValue'],
+            computed: {
+                value: {
+                    get() {
+                       return this.modelValue;
+                    },
+                    set(value) {
+                       this.$emit('update:modelValue', value);
+                    },
+                },
+            },
+            methods: {
+                set_edit(event) {
+                    this.mIsEdit = true;
+                },
+                set_view(event) {
+                    this.mIsEdit = false;
+                },
+                cancel(event) {
+                    this.set_view();
+                },
+                save(event) {
+                    this.set_view();
+                },
+            },
+            template: `
+                <div v-if="!mIsEdit">
+                    <div>[[ value ]] <span @click="set_edit" class="btn_edit">edit</span></div>
+                </div>
+                <div v-else>
+                    <field-textarea-component v-model="value" v-bind="$attrs"><slot/></field-textarea-component>
+                    <input type="button" value="Сохранить" @click="save" class="btn btn-primary">
+                    <input type="button" value="Отменить" @click="cancel" class="btn btn-secondary">
+                </div>
+            `,
+        }
+    </script>
+
+    <script>
+        FieldEditorHeaderComponent = {
+            props: ['modelValue', 'isEdit'],
+            data() {
+                return {mIsEdit: this.isEdit};
+            },
+            components: {fieldInputComponent},
+            emits: ['update:modelValue'],
+            computed: {
+                value: {
+                    get() {
+                       return this.modelValue;
+                    },
+                    set(value) {
+                       this.$emit('update:modelValue', value);
+                    },
+                },
+            },
+            methods: {
+                set_edit(event) {
+                    this.mIsEdit = true;
+                },
+                set_view(event) {
+                    this.mIsEdit = false;
+                },
+                cancel(event) {
+                    this.set_view();
+                },
+                save(event) {
+                    this.set_view();
+                },
+            },
+            template: `
+                <div v-if="!mIsEdit">
+                    <h1>[[ value ]] <span @click="set_edit" class="btn_edit">edit</span></h1>
+                </div>
+                <div v-else>
+                    <field-input-component v-model="value" v-bind="$attrs"><slot/></field-input-component>
+                    <input type="button" value="Сохранить" @click="save" class="btn btn-primary">
+                    <input type="button" value="Отменить" @click="cancel" class="btn btn-secondary">
+                </div>
+            `,
+        }
+    </script>
+
+    <script>
+        ProjectComponent = {
+            props: [],
+            components: {FieldEditorComponent, FieldEditorHeaderComponent},
+            data() {
+                let is_new = !Boolean(project_object);
+                return {
+                    title: is_new ? '' : project_object.title,
+                    short_description: is_new ? '' : project_object.short_description,
+                    description: is_new ? '' : project_object.description,
+                    created_by: is_new ? '' : project_object.created_by.username,
+                    is_new: is_new,
+                };
+            },
+            template: `
+                <form>
+                    <field-editor-header-component v-model="title" name="title" :is-edit="is_new">{{ fields.title.verbose_name }}</field-editor-header-component>
+                    <br>
+                    <field-editor-component v-model="short_description" name="short_description" :is-edit="is_new">{{ fields.short_description.verbose_name }}</field-editor-component>
+                    <br>
+                    <field-editor-component v-model="description" name="description" :is-edit="is_new">{{ fields.description.verbose_name }}</field-editor-component>
+                    <br>
+
+                    <h4>Цели проекта</h4>
+                     <h4>Связь с участниками</h4>
+
+                    <h4>Холсты фасилитации (встречи)</h4>
+                    <h4>База знаний (заметки)</h4>
+                </form>
+            `,
+        }
+    </script>
+
+    <script>
+        var project_object = JSON.parse(document.getElementById('project_json').textContent);
+        const { createApp } = Vue;
+
+        var app_project = createApp(ProjectComponent);
+        app_project.config.compilerOptions.delimiters = [ '[[', ']]' ];
+        app_project.mount('#app_project_id');
+    </script>
+{% endblock %}

@@ -6,5 +6,6 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/', include('server.urls_api')),
     path('auth/', include('django_sy_framework.custom_auth.urls')),
+    path('project/', include('project.urls')),
     path('', include('django_sy_framework.base.urls')),
 ]

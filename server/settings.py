@@ -36,6 +36,7 @@ INSTALLED_APPS = [
     'django_sy_framework.custom_auth',
     'server',
     'pages',
+    'project',
 ]
 
 MIDDLEWARE = [
