@@ -34,7 +34,7 @@
 
 Микросервис является форком сервиса https://github.com/tvp-support/knowledge-api,
 который реализовался как спешный и экспериментальный вариант приложения https://github.com/tvp-support/activista,
-которое, в свою очередь основано на концепции Елены.
+которое, в свою очередь основано на концепции Ольги Ермаковой: https://prezi.com/v7almr-yrv4w/forge/ , https://prezi.com/cmlnos6vh9ac/concept/
 
 ### Веб интерфейс
 
