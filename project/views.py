@@ -49,7 +49,7 @@ class ProjectEditorView(APIView):
                 'short_description': project.short_description,
                 'description': project.description,
                 'created_by': project.created_by.username,
-            },
+            } if project else None,
             'fields': fields,
         }
         return render(request, 'project/project_editor.html', context)
