@@ -22,7 +22,7 @@
     {{ error }}
 
 		{% for project in projects %}
-        <h3><a href="{% url 'project_editor' project.title %}">{{ project.title }}</a></h3>
+        <h3><a href="{% url 'project_editor' project.pk %}">{{ project.title }}</a></h3>
 				<p>{{ project.short_description }}</p>
 		{% endfor %}
 

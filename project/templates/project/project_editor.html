@@ -1,7 +1,7 @@
 {% extends 'template.html' %}
 {% load static %}
 
-{% block title %}{{ project.title }}{% endblock %}
+{% block title %}{% endblock %}
 {% block page_title %}Проект | {{ project.title }}{% endblock %}
 
 {% block content %}
@@ -23,6 +23,11 @@
 {% endblock %}
 
 {% block end_of_body %}
+    <script>
+			  var CSRF_TOKEN = "{{ csrf_token }}";
+			  var URL_PROJECT = '';
+		</script>
+
     <script>
         fieldInputComponent = {
             props: ['name', 'modelValue'],
@@ -75,12 +80,12 @@
 
     <script>
         FieldEditorComponent = {
-            props: ['modelValue', 'isEdit'],
+            props: ['modelValue', 'isEdit', 'verboseName'],
             data() {
-                return {mIsEdit: this.isEdit};
+                return {mIsEdit: this.isEdit, errorMessage: '', prevValue: ''};
             },
             components: {fieldInputComponent, fieldTextareaComponent},
-            emits: ['update:modelValue'],
+            emits: ['update:modelValue', 'save'],
             computed: {
                 value: {
                     get() {
@@ -94,23 +99,27 @@
             methods: {
                 set_edit(event) {
                     this.mIsEdit = true;
+                    this.prevValue = this.value;
                 },
                 set_view(event) {
                     this.mIsEdit = false;
                 },
                 cancel(event) {
+                    this.value = this.prevValue;
                     this.set_view();
                 },
                 save(event) {
-                    this.set_view();
+                    this.$emit('save', event, this);
                 },
             },
             template: `
                 <div v-if="!mIsEdit">
-                    <div>[[ value ]] <span @click="set_edit" class="btn_edit">edit</span></div>
+                    <div>[[ value ]]<span v-if="!value">[[verboseName]] отсутствует</span> <span @click="set_edit" class="btn_edit">edit</span></div>
                 </div>
                 <div v-else>
                     <field-textarea-component v-model="value" v-bind="$attrs"><slot/></field-textarea-component>
+                    <span>[[ errorMessage ]]</span>
+                    <br v-if="errorMessage">
                     <input type="button" value="Сохранить" @click="save" class="btn btn-primary">
                     <input type="button" value="Отменить" @click="cancel" class="btn btn-secondary">
                 </div>
@@ -120,12 +129,12 @@
 
     <script>
         FieldEditorHeaderComponent = {
-            props: ['modelValue', 'isEdit'],
+            props: ['modelValue', 'isEdit', 'verboseName'],
             data() {
-                return {mIsEdit: this.isEdit};
+                return {mIsEdit: this.isEdit, errorMessage: '', prevValue: ''};
             },
             components: {fieldInputComponent},
-            emits: ['update:modelValue'],
+            emits: ['update:modelValue', 'save'],
             computed: {
                 value: {
                     get() {
@@ -139,23 +148,27 @@
             methods: {
                 set_edit(event) {
                     this.mIsEdit = true;
+                    this.prevValue = this.value;
                 },
                 set_view(event) {
                     this.mIsEdit = false;
                 },
                 cancel(event) {
+                    this.value = this.prevValue;
                     this.set_view();
                 },
                 save(event) {
-                    this.set_view();
+                    this.$emit('save', event, this);
                 },
             },
             template: `
                 <div v-if="!mIsEdit">
-                    <h1>[[ value ]] <span @click="set_edit" class="btn_edit">edit</span></h1>
+                    <teleport to="h1">[[ value ]]<span v-if="!value">[[verboseName]] отсутствует</span> <span @click="set_edit" class="btn_edit">edit</span></teleport>
                 </div>
                 <div v-else>
                     <field-input-component v-model="value" v-bind="$attrs"><slot/></field-input-component>
+                    <span>[[ errorMessage ]]</span>
+                    <br v-if="errorMessage">
                     <input type="button" value="Сохранить" @click="save" class="btn btn-primary">
                     <input type="button" value="Отменить" @click="cancel" class="btn btn-secondary">
                 </div>
@@ -164,34 +177,117 @@
     </script>
 
     <script>
+        function send_form(request) {
+            /*
+            Required fields: url, success, self, form
+            Not required: headers, statusCode, post, dataType, data
+            */
+            let headers = request.headers || {};
+            headers['X-CSRFToken'] = CSRF_TOKEN;
+            let form = request.form;
+
+            statusCode = request.statusCode || {
+								500: function(xhr) {
+								    clear_status_fields(form);
+										request.self.errorMessage = 'ошибка сохранения';
+								},
+								400: function(xhr) {
+										request.self.errorMessage = '';
+										clear_status_fields(form);
+										set_invalid_field(form, xhr.responseJSON);
+								},
+						}
+
+            $.ajax({
+                url: request.url,
+                headers: headers,
+                dataType: request.dataType || 'json',
+                data: request.data || $(form).serialize(),
+                success: request.success,
+                statusCode: statusCode,
+                method: request.method || "post",
+            });
+        }
+    </script>
+
+    <script>
         ProjectComponent = {
             props: [],
             components: {FieldEditorComponent, FieldEditorHeaderComponent},
             data() {
-                let is_new = !Boolean(project_object);
+                let isNew = !Boolean(project_object);
                 return {
-                    title: is_new ? '' : project_object.title,
-                    short_description: is_new ? '' : project_object.short_description,
-                    description: is_new ? '' : project_object.description,
-                    created_by: is_new ? '' : project_object.created_by.username,
-                    is_new: is_new,
+                    title: isNew ? '' : project_object.title,
+                    short_description: isNew ? '' : project_object.short_description,
+                    description: isNew ? '' : project_object.description,
+                    created_by: isNew ? '' : project_object.created_by.username,
+                    isNew: isNew,
                 };
             },
+            methods: {
+                save_project(event, fieldComponent) {
+                    let self = this;
+                    let form = event.target.form;
+                    if (this.isNew) {
+                        send_form({
+                            url: URL_PROJECT,
+                            form: event.target.form,
+                            success: function(result) {
+                                fieldComponent.errorMessage = '';
+                                history.pushState(
+                                    null,
+                                    null,
+                                    location.href.replace('/new', '/' + result.project_id),
+                                );
+                                fieldComponent.set_view();
+                                self.isNew = false;
+                            },
+                            'self': fieldComponent,
+                            'form': form,
+                        });
+                    } else {
+                        send_form({
+                            url: URL_PROJECT,
+                            form: event.target.form,
+                            success: function(result) {
+                                clear_status_fields(form);
+                                set_valid_field(form, result.updated_fields);
+                                self.successMessage = '';
+                                fieldComponent.set_view();
+                            },
+                            'self': fieldComponent,
+                            'form': form,
+                        });
+                    }
+                }
+            },
             template: `
-                <form>
-                    <field-editor-header-component v-model="title" name="title" :is-edit="is_new">{{ fields.title.verbose_name }}</field-editor-header-component>
-                    <br>
-                    <field-editor-component v-model="short_description" name="short_description" :is-edit="is_new">{{ fields.short_description.verbose_name }}</field-editor-component>
-                    <br>
-                    <field-editor-component v-model="description" name="description" :is-edit="is_new">{{ fields.description.verbose_name }}</field-editor-component>
-                    <br>
+                <div class="row">
+                    <div class="col sm-6">
+												<form>
+														<field-editor-header-component v-model="title" name="title" :is-edit="isNew" @save="save_project" verbose-name="{{ fields.title.verbose_name }}">
+																{{ fields.title.verbose_name }}
+														</field-editor-header-component>
+														<br>
+														<field-editor-component v-model="short_description" name="short_description" :disabled="isNew" :is-edit="isNew" @save="save_project" verbose-name="{{ fields.short_description.verbose_name }}" :title="isNew ? 'Пожалуйста заполните и сохраните название проекта' : ''">
+																{{ fields.short_description.verbose_name }}
+														</field-editor-component>
+														<br>
+														<field-editor-component v-model="description" name="description" :disabled="isNew" :is-edit="isNew" @save="save_project" verbose-name="{{ fields.description.verbose_name }}" :title="isNew ? 'Пожалуйста заполните и сохраните название проекта' : ''">
+																{{ fields.description.verbose_name }}
+														</field-editor-component>
+												</form>
+                    </div>
+                    <div class="col sm-6">
+												<!--
+												<h4>Цели проекта</h4>
+												<h4>Связь с участниками</h4>
+												-->
 
-                    <h4>Цели проекта</h4>
-                     <h4>Связь с участниками</h4>
-
-                    <h4>Холсты фасилитации (встречи)</h4>
-                    <h4>База знаний (заметки)</h4>
-                </form>
+												<h4>Холсты фасилитации (встречи)</h4>
+												<h4>База знаний (заметки)</h4>
+									  </div>
+                </div>
             `,
         }
     </script>
