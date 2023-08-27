@@ -79,61 +79,16 @@
     </script>
 
     <script>
-        FieldEditorComponent = {
-            props: ['modelValue', 'isEdit', 'verboseName'],
-            data() {
-                return {mIsEdit: this.isEdit, errorMessage: '', prevValue: ''};
-            },
-            components: {fieldInputComponent, fieldTextareaComponent},
-            emits: ['update:modelValue', 'save'],
-            computed: {
-                value: {
-                    get() {
-                       return this.modelValue;
-                    },
-                    set(value) {
-                       this.$emit('update:modelValue', value);
-                    },
-                },
-            },
-            methods: {
-                set_edit(event) {
-                    this.mIsEdit = true;
-                    this.prevValue = this.value;
-                },
-                set_view(event) {
-                    this.mIsEdit = false;
-                },
-                cancel(event) {
-                    this.value = this.prevValue;
-                    this.set_view();
-                },
-                save(event) {
-                    this.$emit('save', event, this);
-                },
-            },
-            template: `
-                <div v-if="!mIsEdit">
-                    <div>[[ value ]]<span v-if="!value">[[verboseName]] отсутствует</span> <span @click="set_edit" class="btn_edit">edit</span></div>
-                </div>
-                <div v-else>
-                    <field-textarea-component v-model="value" v-bind="$attrs"><slot/></field-textarea-component>
-                    <span>[[ errorMessage ]]</span>
-                    <br v-if="errorMessage">
-                    <input type="button" value="Сохранить" @click="save" class="btn btn-primary">
-                    <input type="button" value="Отменить" @click="cancel" class="btn btn-secondary">
-                </div>
-            `,
-        }
+        TeleportToHeaderComponent = {template: `<teleport to="h1"><slot/></teleport>`};
     </script>
 
     <script>
-        FieldEditorHeaderComponent = {
-            props: ['modelValue', 'isEdit', 'verboseName'],
+        FieldEditorComponent = {
+            props: ['modelValue', 'isEdit', 'verboseName', 'nameEditorComponent', 'nameViewerComponent'],
             data() {
                 return {mIsEdit: this.isEdit, errorMessage: '', prevValue: ''};
             },
-            components: {fieldInputComponent},
+            components: {fieldInputComponent, fieldTextareaComponent, TeleportToHeaderComponent},
             emits: ['update:modelValue', 'save'],
             computed: {
                 value: {
@@ -163,10 +118,10 @@
             },
             template: `
                 <div v-if="!mIsEdit">
-                    <teleport to="h1">[[ value ]]<span v-if="!value">[[verboseName]] отсутствует</span> <span @click="set_edit" class="btn_edit">edit</span></teleport>
+                    <component :is="nameViewerComponent">[[ value ]]<span v-if="!value">[[verboseName]] отсутствует</span> <span @click="set_edit" class="btn_edit">edit</span></component>
                 </div>
                 <div v-else>
-                    <field-input-component v-model="value" v-bind="$attrs"><slot/></field-input-component>
+                    <component :is="nameEditorComponent" v-model="value" v-bind="$attrs"><slot/></component>
                     <span>[[ errorMessage ]]</span>
                     <br v-if="errorMessage">
                     <input type="button" value="Сохранить" @click="save" class="btn btn-primary">
@@ -213,7 +168,7 @@
     <script>
         ProjectComponent = {
             props: [],
-            components: {FieldEditorComponent, FieldEditorHeaderComponent},
+            components: {FieldEditorComponent},
             data() {
                 let isNew = !Boolean(project_object);
                 return {
@@ -265,15 +220,15 @@
                 <div class="row">
                     <div class="col sm-6">
 												<form>
-														<field-editor-header-component v-model="title" name="title" :is-edit="isNew" @save="save_project" verbose-name="{{ fields.title.verbose_name }}">
+														<field-editor-component name-editor-component="field-input-component" name-viewer-component="teleport-to-header-component" v-model="title" name="title" :is-edit="isNew" @save="save_project" verbose-name="{{ fields.title.verbose_name }}">
 																{{ fields.title.verbose_name }}
-														</field-editor-header-component>
+														</field-editor-component>
 														<br>
-														<field-editor-component v-model="short_description" name="short_description" :disabled="isNew" :is-edit="isNew" @save="save_project" verbose-name="{{ fields.short_description.verbose_name }}" :title="isNew ? 'Пожалуйста заполните и сохраните название проекта' : ''">
+														<field-editor-component name-editor-component="field-textarea-component" name-viewer-component="div" v-model="short_description" name="short_description" :disabled="isNew" :is-edit="isNew" @save="save_project" verbose-name="{{ fields.short_description.verbose_name }}" :title="isNew ? 'Пожалуйста заполните и сохраните название проекта' : ''">
 																{{ fields.short_description.verbose_name }}
 														</field-editor-component>
 														<br>
-														<field-editor-component v-model="description" name="description" :disabled="isNew" :is-edit="isNew" @save="save_project" verbose-name="{{ fields.description.verbose_name }}" :title="isNew ? 'Пожалуйста заполните и сохраните название проекта' : ''">
+														<field-editor-component name-editor-component="field-textarea-component" name-viewer-component="div" v-model="description" name="description" :disabled="isNew" :is-edit="isNew" @save="save_project" verbose-name="{{ fields.description.verbose_name }}" :title="isNew ? 'Пожалуйста заполните и сохраните название проекта' : ''">
 																{{ fields.description.verbose_name }}
 														</field-editor-component>
 												</form>
