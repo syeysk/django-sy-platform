@@ -9,9 +9,10 @@
     <input type="radio" value="my" name="which"{% if which == 'my' %} checked{% endif %}> Мои проекты
     <input type="radio" value="all" name="which"{% if which == 'all' %} checked{% endif %}> Все проекты
 
-    <br>
-
-    <a href="{% url 'project_create' %}"><input type="button" value="Новый проект" class="btn btn-primary"></a>
+    {% if request.user.is_authenticated %}
+        <br>
+        <a href="{% url 'project_create' %}"><input type="button" value="Новый проект" class="btn btn-primary"></a>
+    {% endif %}
 
     <br><br>
 
