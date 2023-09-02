@@ -1,6 +1,7 @@
 from django.core.paginator import Paginator
 from django.shortcuts import get_object_or_404, render
 from django.views import View
+from requests.exceptions import ConnectionError
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework import status
@@ -8,6 +9,21 @@ from rest_framework import status
 from django_sy_framework.utils.universal_api import API
 from project.models import Project
 from project.serializers import ProjectCreateSerializer, ProjectUpdateSerializer
+
+
+def get_linked_object(project, api, json_data):
+    error_json = {'error': 'ошибка получения холстов :('}
+    try:
+        response = api.linker.project.post(f'/{project.pk}/', json=json_data)
+    except ConnectionError:
+        return error_json
+
+    if response.status_code != 200:
+        return error_json
+
+    objects = response.json()
+    objects['url_new'] = '{}?link_to=project-{}'.format(objects['url_new'], project.pk)
+    return objects
 
 
 class ProjectListView(View):
@@ -46,35 +62,16 @@ class ProjectEditorView(APIView):
             return render(request, 'project/project_editor.html', context)
 
         project = get_object_or_404(Project, pk=pk)
-
-        api_faci = API('1', 'faci')
-        response = api_faci.linker.project.post(
-            f'/{project.pk}/',
-            json={'object': 'faci', 'fields': ['id', 'aim'], 'extra_fields': ['url']},
-        )
-        faci_objects = {}
-        if response.status_code == 200:
-            faci_objects = response.json()
-            faci_objects['url_new'] = '{}?link_to=project-{}'.format(faci_objects['url_new'], project.pk)
-
-        api_note = API('1', 'note')
-        response = api_note.linker.project.post(
-            f'/{project.pk}/',
-            json={'object': 'note', 'fields': ['id', 'title'], 'extra_fields': ['url']},
-        )
-        note_objects = {}
-        if response.status_code == 200:
-            note_objects = response.json()
-            note_objects['url_new'] = '{}?link_to=project-{}'.format(note_objects['url_new'], project.pk)
-
+        json_data_faci = {'object': 'faci', 'fields': ['id', 'aim'], 'extra_fields': ['url']}
+        json_data_note = {'object': 'note', 'fields': ['id', 'title'], 'extra_fields': ['url']}
         context = {
             'project': {
                 'title': project.title,
                 'short_description': project.short_description,
                 'description': project.description,
                 'created_by': project.created_by.username,
-                'facis': faci_objects,
-                'notes': note_objects,
+                'facis': get_linked_object(project, API('1', 'faci'), json_data_faci),
+                'notes': get_linked_object(project, API('1', 'note'), json_data_note),
             },
             'fields': fields,
         }
