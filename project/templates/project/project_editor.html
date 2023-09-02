@@ -84,7 +84,7 @@
 
     <script>
         FieldEditorComponent = {
-            props: ['modelValue', 'isEdit', 'verboseName', 'nameEditorComponent', 'nameViewerComponent'],
+            props: ['modelValue', 'isEdit', 'verboseName', 'nameEditorComponent', 'nameViewerComponent', 'showCancelBtn'],
             data() {
                 return {mIsEdit: this.isEdit, errorMessage: '', prevValue: ''};
             },
@@ -118,14 +118,20 @@
             },
             template: `
                 <div v-if="!mIsEdit">
-                    <component :is="nameViewerComponent">[[ value ]]<span v-if="!value">[[verboseName]] отсутствует</span> <span @click="set_edit" class="btn_edit">edit</span></component>
+                    <component :is="nameViewerComponent">
+                        [[ value ]]
+                        <span v-if="!value">[[verboseName]] отсутствует</span>
+                        {% if request.user.is_authenticated %}
+                            <span @click="set_edit" class="btn_edit">edit</span>
+                        {% endif %}
+                    </component>
                 </div>
                 <div v-else>
                     <component :is="nameEditorComponent" v-model="value" v-bind="$attrs"><slot/></component>
                     <span>[[ errorMessage ]]</span>
                     <br v-if="errorMessage">
                     <input type="button" value="Сохранить" @click="save" class="btn btn-primary">
-                    <input type="button" value="Отменить" @click="cancel" class="btn btn-secondary">
+                    <input type="button" value="Отменить" @click="cancel" class="btn btn-secondary" v-if="showCancelBtn">
                 </div>
             `,
         }
@@ -166,16 +172,61 @@
     </script>
 
     <script>
+			  LinkerItemFaciComponent = {
+			      props: ['object'],
+			      template: `
+                <li>
+								    <a :href="object.url" target="_blank">[[object.aim]]</a>
+							  </li>
+					  `,
+			  }
+		</script>
+
+    <script>
+			  LinkerItemNoteComponent = {
+			      props: ['object'],
+			      template: `
+                <li>
+								    <a :href="object.url" target="_blank">[[object.title]]</a>
+							  </li>
+					  `,
+			  }
+		</script>
+
+    <script>
+			  LinkerComponent = {
+			      props: ['title', 'objects', 'numPages', 'item', 'page', 'createObjectText', 'createObjectUrl', 'showCreateBtn'],
+			      components: {LinkerItemFaciComponent, LinkerItemNoteComponent},
+			      template: `
+                <h4>[[ title ]]</h4>
+								<ul>
+								    <component :is="item" v-for="object in objects" :object="object" :key="object.id"></component>
+							 </ul>
+							 {% if request.user.is_authenticated %}
+						    	 <div style="text-align:right;" v-if="showCreateBtn">
+    						    	 <a :href="createObjectUrl" target="_blank"><button class="btn btn-secondary">[[createObjectText]]</button></a>
+    				    	 </div>
+    				    	 <p v-else style="color: grey;">
+    				    	     добавление объектов станет доступно после сохранения названия проекта
+    				    	 </p>
+    				   {% endif %}
+			      `,
+			  }
+		</script>
+
+    <script>
         ProjectComponent = {
             props: [],
-            components: {FieldEditorComponent},
+            components: {FieldEditorComponent, LinkerComponent},
             data() {
                 let isNew = !Boolean(project_object);
                 return {
                     title: isNew ? '' : project_object.title,
                     short_description: isNew ? '' : project_object.short_description,
                     description: isNew ? '' : project_object.description,
-                    created_by: isNew ? '' : project_object.created_by.username,
+                    created_by: isNew ? '{{ request.user.username }}' : project_object.created_by,
+                    facis: isNew ? {} : project_object.facis,
+                    notes: isNew ? {} : project_object.notes,
                     isNew: isNew,
                 };
             },
@@ -220,27 +271,80 @@
                 <div class="row">
                     <div class="col sm-6">
 												<form>
-														<field-editor-component name-editor-component="field-input-component" name-viewer-component="teleport-to-header-component" v-model="title" name="title" :is-edit="isNew" @save="save_project" verbose-name="{{ fields.title.verbose_name }}">
-																{{ fields.title.verbose_name }}
-														</field-editor-component>
+														<field-editor-component
+														     name-editor-component="field-input-component"
+														     name-viewer-component="teleport-to-header-component"
+														     v-model="title"
+														     name="title"
+														     :is-edit="isNew"
+														     @save="save_project"
+														     verbose-name="{{ fields.title.verbose_name }}"
+														     :show-cancel-btn="!isNew"
+														>{{ fields.title.verbose_name }}</field-editor-component>
 														<br>
-														<field-editor-component name-editor-component="field-textarea-component" name-viewer-component="div" v-model="short_description" name="short_description" :disabled="isNew" :is-edit="isNew" @save="save_project" verbose-name="{{ fields.short_description.verbose_name }}" :title="isNew ? 'Пожалуйста заполните и сохраните название проекта' : ''">
-																{{ fields.short_description.verbose_name }}
-														</field-editor-component>
+														<field-editor-component
+														    name-editor-component="field-textarea-component"
+														    name-viewer-component="div"
+														    v-model="short_description"
+														    name="short_description"
+														    :disabled="isNew"
+														    :is-edit="isNew"
+														    @save="save_project"
+														    verbose-name="{{ fields.short_description.verbose_name }}"
+														    :title="isNew ? 'Пожалуйста заполните и сохраните название проекта' : ''"
+														    :show-cancel-btn="!isNew"
+														>{{ fields.short_description.verbose_name }}</field-editor-component>
 														<br>
-														<field-editor-component name-editor-component="field-textarea-component" name-viewer-component="div" v-model="description" name="description" :disabled="isNew" :is-edit="isNew" @save="save_project" verbose-name="{{ fields.description.verbose_name }}" :title="isNew ? 'Пожалуйста заполните и сохраните название проекта' : ''">
-																{{ fields.description.verbose_name }}
-														</field-editor-component>
+														<field-editor-component
+														    name-editor-component="field-textarea-component"
+														    name-viewer-component="div"
+														    v-model="description"
+														    name="description"
+														    :disabled="isNew"
+														    :is-edit="isNew"
+														    @save="save_project"
+														    verbose-name="{{ fields.description.verbose_name }}"
+														    :title="isNew ? 'Пожалуйста заполните и сохраните название проекта' : ''"
+														    :show-cancel-btn="!isNew"
+														>{{ fields.description.verbose_name }}</field-editor-component>
 												</form>
+
+												<br>
+
+                        <p>
+    												<li>Автор проекта: [[created_by]]</li>
+    										</p>
+
                     </div>
+
                     <div class="col sm-6">
 												<!--
 												<h4>Цели проекта</h4>
 												<h4>Связь с участниками</h4>
 												-->
 
-												<h4>Холсты фасилитации (встречи)</h4>
-												<h4>База знаний (заметки)</h4>
+                        <linker-component
+                            item="LinkerItemFaciComponent"
+                            title="Холсты фасилитации"
+                            :objects="facis.objects"
+                            :num-pages="facis.num_pages"
+                            :page="facis.page"
+                            create-object-text="Новая встреча"
+                            :create-object-url="facis.url_new"
+                            :show-create-btn="!isNew"
+                        ></linker-component>
+
+                        <linker-component
+                            item="LinkerItemNoteComponent"
+                            title="База знаний"
+                            :objects="notes.objects"
+                            :num-pages="notes.num_pages"
+                            :page="notes.page"
+                            create-object-text="Новая заметка"
+                            :create-object-url="notes.url_new"
+                            :show-create-btn="!isNew"
+                        ></linker-component>
+
 									  </div>
                 </div>
             `,

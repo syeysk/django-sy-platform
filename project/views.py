@@ -5,6 +5,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework import status
 
+from django_sy_framework.utils.universal_api import API
 from project.models import Project
 from project.serializers import ProjectCreateSerializer, ProjectUpdateSerializer
 
@@ -36,18 +37,45 @@ class ProjectListView(View):
 
 class ProjectEditorView(APIView):
     def get(self, request, pk=None):
-        project = None
-        if pk:
-            project = get_object_or_404(Project, pk=pk)
-
         fields = {field.name: field for field in Project._meta.get_fields(include_parents=False)}
+        if not pk:
+            if not request.user.is_authenticated:
+                return Response(status=status.HTTP_401_UNAUTHORIZED)
+
+            context = {'project': None, 'fields': fields}
+            return render(request, 'project/project_editor.html', context)
+
+        project = get_object_or_404(Project, pk=pk)
+
+        api_faci = API('1', 'faci')
+        response = api_faci.linker.project.post(
+            f'/{project.pk}/',
+            json={'object': 'faci', 'fields': ['id', 'aim'], 'extra_fields': ['url']},
+        )
+        faci_objects = {}
+        if response.status_code == 200:
+            faci_objects = response.json()
+            faci_objects['url_new'] = '{}?link_to=project-{}'.format(faci_objects['url_new'], project.pk)
+
+        api_note = API('1', 'note')
+        response = api_note.linker.project.post(
+            f'/{project.pk}/',
+            json={'object': 'note', 'fields': ['id', 'title'], 'extra_fields': ['url']},
+        )
+        note_objects = {}
+        if response.status_code == 200:
+            note_objects = response.json()
+            note_objects['url_new'] = '{}?link_to=project-{}'.format(note_objects['url_new'], project.pk)
+
         context = {
             'project': {
                 'title': project.title,
                 'short_description': project.short_description,
                 'description': project.description,
                 'created_by': project.created_by.username,
-            } if project else None,
+                'facis': faci_objects,
+                'notes': note_objects,
+            },
             'fields': fields,
         }
         return render(request, 'project/project_editor.html', context)
