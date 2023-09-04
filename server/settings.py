@@ -34,6 +34,7 @@ INSTALLED_APPS = [
     'drf_spectacular',
     'django_sy_framework.base',
     'django_sy_framework.custom_auth',
+    'django_sy_framework.linker',
     'server',
     'pages',
     'project',
