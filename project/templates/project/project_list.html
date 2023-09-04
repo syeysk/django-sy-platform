@@ -6,8 +6,12 @@
 
 {% block content %}
 
-    <input type="radio" value="my" name="which"{% if which == 'my' %} checked{% endif %}> Мои проекты
-    <input type="radio" value="all" name="which"{% if which == 'all' %} checked{% endif %}> Все проекты
+    <form method="get" onchange="this.submit()">
+			  {% if request.user.is_authenticated %}
+            <input type="radio" value="my" name="which"{% if which == 'my' %} checked{% endif %}> Мои проекты
+			  {% endif %}
+        <input type="radio" value="all" name="which"{% if which == 'all' %} checked{% endif %}> Все проекты
+		</form>
 
     {% if request.user.is_authenticated %}
         <br>

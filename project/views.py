@@ -11,8 +11,8 @@ from project.models import Project
 from project.serializers import ProjectCreateSerializer, ProjectUpdateSerializer
 
 
-def get_linked_object(project, api, json_data):
-    error_json = {'error': 'ошибка получения холстов :('}
+def get_linked_object(project, api, json_data, verbose_name):
+    error_json = {'error': f'ошибка получения {verbose_name} :('}
     try:
         response = api.linker.project.post(f'/{project.pk}/', json=json_data)
     except ConnectionError:
@@ -29,7 +29,7 @@ def get_linked_object(project, api, json_data):
 class ProjectListView(View):
     def get(self, request):
         page_number = request.GET.get('p', '1')
-        which = request.GET.get('which', 'my' if request.user.is_authenticated else 'all')
+        which = request.GET.get('which') or 'my' if request.user.is_authenticated else 'all'
         page_number = int(page_number) if page_number.isdecimal() else 1
         count_on_page = 20
 
@@ -63,15 +63,15 @@ class ProjectEditorView(APIView):
 
         project = get_object_or_404(Project, pk=pk)
         json_data_faci = {'object': 'faci', 'fields': ['id', 'aim'], 'extra_fields': ['url']}
-        json_data_note = {'object': 'note', 'fields': ['id', 'title'], 'extra_fields': ['url']}
+        json_data_note = {'object': 'note', 'fields': ['id', 'title'], 'extra_fields': ['url'], 'order_by': ['title']}
         context = {
             'project': {
                 'title': project.title,
                 'short_description': project.short_description,
                 'description': project.description,
                 'created_by': project.created_by.username,
-                'facis': get_linked_object(project, API('1', 'faci'), json_data_faci),
-                'notes': get_linked_object(project, API('1', 'note'), json_data_note),
+                'facis': get_linked_object(project, API('1', 'faci'), json_data_faci, 'холстов'),
+                'notes': get_linked_object(project, API('1', 'note'), json_data_note, 'заметок'),
             },
             'fields': fields,
         }
