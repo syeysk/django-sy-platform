@@ -25,118 +25,18 @@
 {% block end_of_body %}
     {{ block.super }}
     <script>
+        var IS_AUTHENTICATED = {% if request.user.is_authenticated %}true{% else %}false{% endif %};
 			  var CSRF_TOKEN = "{{ csrf_token }}";
 			  var URL_PROJECT = '';
 		</script>
 
     <script>
-        fieldInputComponent = {
-            props: ['name', 'modelValue'],
-            emits: ['update:modelValue'],
-            computed: {
-                value: {
-                    get() {
-                       return this.modelValue;
-                    },
-                    set(value) {
-                       this.$emit('update:modelValue', value);
-                    },
-                },
-            },
-            template: `
-                <div class="mb-3 form-group" :id="name + '-group'">
-                    <div class="form-floating">
-                        <input v-model="value" class="form-control" type="input" :name="name" :id="name + '-field'" v-bind="$attrs">
-                        <label :for="name + '-field'" class="form-label"><slot/></label>
-                    </div>
-                </div>
-            `,
-        }
-    </script>
-
-    <script>
-        fieldTextareaComponent = {
-            props: ['name', 'modelValue'],
-            emits: ['update:modelValue'],
-            computed: {
-                value: {
-                    get() {
-                       return this.modelValue;
-                    },
-                    set(value) {
-                       this.$emit('update:modelValue', value);
-                    },
-                },
-            },
-            template: `
-                <div class="mb-3 form-group" :id="name + '-group'">
-                    <div class="form-floating">
-                        <textarea v-model="value" :name="name" style="width: 100%;" rows="5" class="form-control" v-bind="$attrs"></textarea>
-                        <label :for="name + '-field'" class="form-label"><slot/></label>
-                    </div>
-                </div>
-            `,
-        }
-    </script>
-
-    <script>
         TeleportToHeaderComponent = {template: `<teleport to="h1"><slot/></teleport>`};
     </script>
 
-    <script>
-        FieldEditorComponent = {
-            props: ['modelValue', 'isEdit', 'verboseName', 'nameEditorComponent', 'nameViewerComponent', 'showCancelBtn'],
-            data() {
-                return {mIsEdit: this.isEdit, errorMessage: '', prevValue: ''};
-            },
-            components: {fieldInputComponent, fieldTextareaComponent, TeleportToHeaderComponent},
-            emits: ['update:modelValue', 'save'],
-            computed: {
-                value: {
-                    get() {
-                       return this.modelValue;
-                    },
-                    set(value) {
-                       this.$emit('update:modelValue', value);
-                    },
-                },
-            },
-            methods: {
-                set_edit(event) {
-                    this.mIsEdit = true;
-                    this.prevValue = this.value;
-                },
-                set_view(event) {
-                    this.mIsEdit = false;
-                },
-                cancel(event) {
-                    this.value = this.prevValue;
-                    this.set_view();
-                },
-                save(event) {
-                    this.$emit('save', event, this);
-                },
-            },
-            template: `
-                <div v-if="!mIsEdit">
-                    <component :is="nameViewerComponent">
-                        [[ value ]]
-                        <span v-if="!value">[[verboseName]] отсутствует</span>
-                        {% if request.user.is_authenticated %}
-                            <span @click="set_edit" class="btn_edit">edit</span>
-                        {% endif %}
-                    </component>
-                </div>
-                <div v-else>
-                    <component :is="nameEditorComponent" v-model="value" v-bind="$attrs"><slot/></component>
-                    <span>[[ errorMessage ]]</span>
-                    <br v-if="errorMessage">
-                    <input type="button" value="Сохранить" @click="save" class="btn btn-primary">
-                    <input type="button" value="Отменить" @click="cancel" class="btn btn-secondary" v-if="showCancelBtn">
-                </div>
-            `,
-        }
-    </script>
+    <script src="{% static 'project/field-input-component.js' %}"></script>
+    <script src="{% static 'project/field-textarea-component.js' %}"></script>
+    <script src="{% static 'project/field-editor-component.js' %}"></script>
 
     <script>
         function send_form(request) {
@@ -194,37 +94,7 @@
 			  }
 		</script>
 
-    <script>
-			  LinkerComponent = {
-			      props: [
-			          'title',
-			          'objects',
-			          'numPages',
-			          'item',
-			          'page',
-			          'createObjectText',
-			          'createObjectUrl',
-			          'showCreateBtn',
-			          'error',
-			      ],
-			      components: {LinkerItemFaciComponent, LinkerItemNoteComponent},
-			      template: `
-                <h4>[[ title ]]</h4>
-								<ul>
-								    <component :is="item" v-for="object in objects" :object="object" :key="object.id"></component>
-							 </ul>
-							 <p v-if="error" style="color: grey;">[[ error ]]</p>
-							 {% if request.user.is_authenticated %}
-						    	 <div style="text-align:right;" v-if="showCreateBtn">
-    						    	 <a :href="createObjectUrl" target="_blank"><button class="btn btn-secondary">[[createObjectText]]</button></a>
-    				    	 </div>
-    				    	 <p v-else style="color: grey;">
-    				    	     добавление объектов станет доступно после сохранения названия проекта
-    				    	 </p>
-    				   {% endif %}
-			      `,
-			  }
-		</script>
+    <script src="{% static 'project/linker-component.js' %}"></script>
 
     <script>
         ProjectComponent = {
