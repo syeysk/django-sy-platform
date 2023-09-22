@@ -16,6 +16,10 @@
             padding: 2px 4px 2px 4px;
             border-radius: 3px;
         }
+        h4 {
+            padding: 15px 0 15px 0;
+            /*text-align: center;*/
+        }
     </style>
 
     {{ project|json_script:'project_json' }}
@@ -27,7 +31,8 @@
     <script>
         var IS_AUTHENTICATED = {% if request.user.is_authenticated %}true{% else %}false{% endif %};
 			  var CSRF_TOKEN = "{{ csrf_token }}";
-			  var URL_PROJECT = '';
+			  var URL_PROJECT = '/edit';
+			  var URL_ADD_NEWS = '/publicate-news'
 		</script>
 
     <script>
@@ -98,10 +103,11 @@
 
     <script>
 			  NewsComponent = {
-			      props: ['text', 'datetime'],
+			      props: ['title', 'text', 'dt_create'],
 			      components: {},
 			      template: `
-			          <span>[[ datetime ]]</span>
+			          <h5 style="padding-left: 25px;">[[ title ]]</h5>
+			          <span style="font-size: 9pt; color: grey;">[[ dt_create ]]</span>
 			          <p>[[ text ]]</p>
 			      `,
 			  }
@@ -111,46 +117,60 @@
 			  NewsBlockComponent = {
 			      props: ['project_news'],
 			      components: {NewsComponent},
+			      emits: ['publicate'],
 			      data() {
-			          return {isView: true, added_text: '', is_auth: IS_AUTHENTICATED};
+			          return {isView: true, added_title: '', added_text: '', is_auth: IS_AUTHENTICATED};
 			      },
 			      methods: {
 			          startAdding(event) {
 			              this.isView = false;
 			          },
-			          publicate(event) {
-			              this.project_news.unshift({text: this.added_text, datetime: '4565-45-45 65:87'});
+			          publicate(project_news_for_publicating) {
+			              this.project_news.unshift(project_news_for_publicating);
 			              if (this.project_news.length > 10) {
 			                  this.project_news.pop();
 			              }
 			              this.isView = true;
 			              this.added_text = '';
+			              this.added_title = '';
+			          },
+			          on_publicate(event) {
+    			          this.$emit('publicate', this.publicate, event, this)
 			          },
 			          cancel(event) {
 			              this.isView = true;
 			              this.added_text = '';
+			              this.added_title = '';
 			          },
 			      },
 			      template: `
 			      <form>
 			          <input type="button" value="Добавить новость" class="btn btn-outline-secondary" v-if="is_auth && isView" @click="startAdding">
 			          <div v-if="!isView">
-										<div class="mb-3 form-group" id="added_text-group">
+										<div class="mb-3 form-group" id="title-group">
 												<div class="form-floating">
-														<textarea v-model="added_text" name="added_text" style="width: 100%;" rows="5" class="form-control"></textarea>
-														<label for="added_text-field" class="form-label">Текст новости</label>
+														<input v-model="added_title" class="form-control" type="input" name="title" id="title-field">
+														<label for="title-field" class="form-label">Заголовок новости</label>
+												</div>
+										</div>
+										<div class="mb-3 form-group" id="text-group">
+												<div class="form-floating">
+														<textarea v-model="added_text" name="text" style="width: 100%;" rows="5" class="form-control"></textarea>
+														<label for="text-field" class="form-label">Текст новости</label>
 												</div>
 										</div>
 										<br>
-										<input type="button" value="Опубликовать" class="btn btn-outline-secondary" @click="publicate">
+										<input type="button" value="Опубликовать" class="btn btn-outline-secondary" @click="on_publicate">
 										<input type="button" value="Отменить" class="btn btn-outline-secondary" @click="cancel">
     							  <br><br>
 			          </div>
 			      </form>
 						<news-component
 								v-for="news in project_news"
+								:key="news.pk"
+								:title="news.title"
 								:text="news.text"
-								:datetime="news.datetime"
+								:dt_create="news.dt_create"
 						></news-component>
 			      `,
 			  }
@@ -179,8 +199,8 @@
                     let form = event.target.form;
                     if (this.isNew) {
                         send_form({
-                            url: URL_PROJECT,
-                            form: event.target.form,
+                            url: window.location.href + URL_PROJECT,
+                            form: form,
                             success: function(result) {
                                 fieldComponent.errorMessage = '';
                                 history.pushState(
@@ -192,12 +212,11 @@
                                 self.isNew = false;
                             },
                             'self': fieldComponent,
-                            'form': form,
                         });
                     } else {
                         send_form({
-                            url: URL_PROJECT,
-                            form: event.target.form,
+                            url: window.location.href + URL_PROJECT,
+                            form: form,
                             success: function(result) {
                                 clear_status_fields(form);
                                 set_valid_field(form, result.updated_fields);
@@ -205,9 +224,38 @@
                                 fieldComponent.set_view();
                             },
                             'self': fieldComponent,
-                            'form': form,
                         });
                     }
+                },
+                publicate_news(publicate_func, event, news_component) {
+                    console.log(event)
+                    let self = this;
+                    let form = event.target.form;
+                    $.ajax({
+                        url: window.location.href + URL_ADD_NEWS,
+                        headers: {"X-CSRFToken": CSRF_TOKEN},
+                        dataType: 'json',
+                        data: {title: news_component.added_title, text: news_component.added_text},
+                        success: function(result) {
+                            publicate_func({title: news_component.added_title, text: news_component.added_text, pk: result.id, dt_create: result.dt_create});
+                            self.$.vnode.key = result.id;
+                            self.badMessage = '';
+                        },
+                        statusCode: {
+                            500: function(xhr) {
+                                self.badMessage = 'ошибка сервера'
+                            },
+                            400: function(xhr) {
+                                clear_status_fields(form);
+                                set_invalid_field(form, xhr.responseJSON);
+                                self.badMessage = '';
+                            },
+                            404: function(xhr) {
+                                self.badMessage = 'база с таким именем не существует'
+                            },
+                        },
+                        method: "post"
+                    });
                 }
             },
             template: `
@@ -262,6 +310,7 @@
 
     										<news-block-component
     										:project_news="news"
+    										@publicate="publicate_news"
     										></news-block-component>
 
                     </div>

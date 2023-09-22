@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from project.models import Project
+from project.models import Project, ProjectNews
 
 
 class ProjectCreateSerializer(serializers.ModelSerializer):
@@ -18,3 +18,9 @@ class ProjectUpdateSerializer(serializers.ModelSerializer):
             'short_description': {'required': False},
             'description': {'required': False},
         }
+
+
+class NewsAddSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ProjectNews
+        fields = ['title', 'text']
