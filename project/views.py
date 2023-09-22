@@ -72,6 +72,12 @@ class ProjectEditorView(APIView):
                 'created_by': project.created_by.username,
                 'facis': get_linked_object(project, API('1', 'faci'), json_data_faci, 'холстов'),
                 'notes': get_linked_object(project, API('1', 'note'), json_data_note, 'заметок'),
+                'news': [
+                    {'text': 'njf nfj nff eijbiobioboi dd', 'datetime': '2022-23-43 54:76', 'pk': 4},
+                    {'text': 'nfdgbjf nfiobioboi dd', 'datetime': '2022-23-43 54:76', 'pk': 3},
+                    {'text': 'njf  m ovjkff', 'datetime': '2022-23-43 54:76', 'pk': 2},
+                    {'text': 'df f njf nffkkfkfkffk dd', 'datetime': '2022-23-43 54:76', 'pk': 1},
+                ],
             },
             'fields': fields,
         }

@@ -22,7 +22,7 @@ LinkerComponent = {
        <p v-if="error" style="color: grey;">[[ error ]]</p>
        <div v-if="is_auth">
            <div style="text-align:right;" v-if="showCreateBtn">
-               <a :href="createObjectUrl" target="_blank"><button class="btn btn-secondary">[[createObjectText]]</button></a>
+               <a :href="createObjectUrl" target="_blank"><button class="btn btn-outline-secondary">[[createObjectText]]</button></a>
            </div>
            <p v-else style="color: grey;">
                добавление объектов станет доступно после сохранения названия проекта
