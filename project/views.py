@@ -7,7 +7,6 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework import status
 
-from django_sy_framework.utils.exceptions import Http401
 from django_sy_framework.utils.universal_api import API
 from project.models import Project
 from project.serializers import NewsAddSerializer, ProjectCreateSerializer, ProjectUpdateSerializer
@@ -60,7 +59,7 @@ class ProjectView(View):
         fields = {field.name: field for field in Project._meta.get_fields(include_parents=False)}
         if not pk:
             if not request.user.is_authenticated:
-                raise Http401('Добавление проектов доступно только зарегистрированным пользователям')
+                return render(request, '401.html')
 
             context = {'project': None, 'fields': fields}
             return render(request, 'project/project_editor.html', context)
