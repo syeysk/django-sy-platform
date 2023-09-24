@@ -24,29 +24,25 @@
         <p>Проекты отсутствуют. Вы можете быть первыми в добавлении проектов </p>
     {% endif %}
 
-    {{ error }}
-
 		{% for project in projects %}
         <h3><a href="{% url 'project_editor' project.pk %}">{{ project.title }}</a></h3>
 				<p>{{ project.short_description }}</p>
 		{% endfor %}
 
     <p>
-			  {% with request.GET.s|urlencode as search %}
 		  	{% if current_page > 1 %}
-    		  	<a href="{% url 'project_list' %}?{% if search %}s={{search}}&{% endif %}p=1">1</a>
+    		  	<a href="{% url 'project_list' %}?{% if 's' in request.GET %}s={{request.GET.s|urlencode}}&{% endif %}p=1">1</a>
 		  	{% endif %}
 			  {% if current_page > 2 %}
-    			  <a href="{% url 'project_list' %}?{% if search %}s={{search}}&{% endif %}p={{ current_page|add:-1 }}"> << </a>
+    			  <a href="{% url 'project_list' %}?{% if 's' in request.GET %}s={{request.GET.s|urlencode}}&{% endif %}p={{ current_page|add:-1 }}"> << </a>
 		  	{% endif %}
 			  <span>{{ current_page }}</span>
 			  {% if current_page < last_page|add:-1 %}
-    			  <a href="{% url 'project_list' %}?{% if search %}s={{search}}&{% endif %}p={{ current_page|add:1 }}"> >> </a>
+    			  <a href="{% url 'project_list' %}?{% if 's' in request.GET %}s={{request.GET.s|urlencode}}&{% endif %}p={{ current_page|add:1 }}"> >> </a>
 		  	{% endif %}
 			  {% if current_page < last_page %}
-    			  <a href="{% url 'project_list' %}?{% if search %}s={{search}}&{% endif %}p={{ last_page }}">{{ last_page }}</a>
+    			  <a href="{% url 'project_list' %}?{% if 's' in request.GET %}s={{request.GET.s|urlencode}}&{% endif %}p={{ last_page }}">{{ last_page }}</a>
 		  	{% endif %}
-			  {% endwith %}
 		</p>
 
 {% endblock %}
