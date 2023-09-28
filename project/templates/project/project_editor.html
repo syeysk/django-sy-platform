@@ -23,6 +23,7 @@
     </style>
 
     {{ project|json_script:'project_json' }}
+    {{ specificities|json_script:'specificities_json' }}
     <div id="app_project_id"></div>
 {% endblock %}
 
@@ -33,6 +34,7 @@
 			  var CSRF_TOKEN = "{{ csrf_token }}";
 			  var URL_PROJECT = '/edit';
 			  var URL_ADD_NEWS = '/publicate-news'
+			  var URL_SAVE_SPECIFICITY = '/save-specificity'
 		</script>
 
     <script>
@@ -115,7 +117,7 @@
 
     <script>
 			  NewsBlockComponent = {
-			      props: ['project_news'],
+			      props: ['project_news', 'isNew'],
 			      components: {NewsComponent},
 			      emits: ['publicate'],
 			      data() {
@@ -144,7 +146,7 @@
 			          },
 			      },
 			      template: `
-			      <form>
+			      <form v-if="!isNew">
 			          <input type="button" value="Добавить новость" class="btn btn-outline-secondary" v-if="is_auth && isView" @click="startAdding">
 			          <div v-if="!isView">
 										<div class="mb-3 form-group" id="title-group">
@@ -177,16 +179,80 @@
  		</script>
 
     <script>
+				SpecificitiesComponent = {
+				    props: ['specificity', 'isNew'],
+						data() {
+								let specificities = JSON.parse(document.getElementById('specificities_json').textContent);
+								return {
+										specificities: specificities,
+										mSpecificity: this.specificity,
+										badMessage: '',
+										is_auth: IS_AUTHENTICATED,
+								};
+						},
+						template: `
+						    <h4>Специфика проекта</h4>
+						    <form v-if="!isNew">
+										<div class="form-floating">
+												<select class="form-select" id="specificity-field" v-model="mSpecificity" name="specificity">
+												    <option value="null" :selected="!mSpecificity">Не выбрано</option>
+														<option :value="specificity[0]" v-for="specificity of specificities" :selected="mSpecificity == specificity[0]">[[ specificity[1] ]]</option>
+												</select>
+												<label for="specificity-field">Специфика</label>
+										</div>
+										<br>
+										<div v-if="badMessage">[[ badMessage ]]</div>
+										<div style="text-align: right;" v-if="is_auth">
+										    <input type="button" value="Сохранить" class="btn btn-outline-secondary" @click="save">
+										</div>
+								</form>
+						`,
+						methods: {
+						    save(event) {
+						        let self = this;
+						        let form = event.target.form;
+						        $.ajax({
+                        url: window.location.href + URL_SAVE_SPECIFICITY,
+                        headers: {"X-CSRFToken": CSRF_TOKEN},
+                        dataType: 'json',
+                        data: {specificity: self.mSpecificity},
+                        success: function(result) {
+                            self.badMessage = '';
+                            set_valid_field(form, result.updated_fields);
+                        },
+                        statusCode: {
+                            500: function(xhr) {
+                                self.badMessage = 'ошибка сервера'
+                            },
+                            400: function(xhr) {
+                                clear_status_fields(form);
+                                set_invalid_field(form, xhr.responseJSON);
+                                self.badMessage = '';
+                            },
+                            404: function(xhr) {
+                                self.badMessage = 'такой проект не существует'
+                            },
+                        },
+                        method: "post"
+                    });
+						    }
+						},
+				}
+ 		</script>
+
+    <script>
         ProjectComponent = {
             props: [],
-            components: {FieldEditorComponent, LinkerComponent, NewsBlockComponent},
+            components: {FieldEditorComponent, LinkerComponent, NewsBlockComponent, SpecificitiesComponent},
             data() {
+                let project_object = JSON.parse(document.getElementById('project_json').textContent);
                 let isNew = !Boolean(project_object);
                 return {
                     title: isNew ? '' : project_object.title,
                     short_description: isNew ? '' : project_object.short_description,
                     description: isNew ? '' : project_object.description,
                     created_by: isNew ? '{{ request.user.username }}' : project_object.created_by,
+                    specificity: isNew ? '' : project_object.specificity,
                     facis: isNew ? {} : project_object.facis,
                     notes: isNew ? {} : project_object.notes,
                     news: isNew ? [] : project_object.news,
@@ -251,7 +317,7 @@
                                 self.badMessage = '';
                             },
                             404: function(xhr) {
-                                self.badMessage = 'база с таким именем не существует'
+                                self.badMessage = 'такой проект не существует'
                             },
                         },
                         method: "post"
@@ -309,8 +375,9 @@
                         <h4>Новости проекта</h4>
 
     										<news-block-component
-    										:project_news="news"
-    										@publicate="publicate_news"
+        										:isNew="isNew"
+        										:project_news="news"
+    		    								@publicate="publicate_news"
     										></news-block-component>
 
                     </div>
@@ -320,6 +387,11 @@
 												<h4>Цели проекта</h4>
 												<h4>Связь с участниками</h4>
 												-->
+
+												<specificities-component
+												    :isNew="isNew"
+												    :specificity="specificity"
+												></specificities-component>
 
                         <linker-component
                             item="LinkerItemFaciComponent"
@@ -352,7 +424,6 @@
     </script>
 
     <script>
-        var project_object = JSON.parse(document.getElementById('project_json').textContent);
         const { createApp } = Vue;
 
         var app_project = createApp(ProjectComponent);

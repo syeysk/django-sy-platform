@@ -1,4 +1,6 @@
 from django.contrib.auth import get_user_model
+from django.contrib.contenttypes.fields import GenericForeignKey
+from django.contrib.contenttypes.models import ContentType
 from django.db import models
 
 from django_sy_framework.utils.mixins import DatetimeMixin
@@ -6,13 +8,19 @@ from django_sy_framework.utils.mixins import DatetimeMixin
 
 class Project(models.Model):
     created_by = models.ForeignKey(get_user_model(), on_delete=models.CASCADE, related_name='projects')
-    title = models.CharField('Название проекта', max_length=100)
+    title = models.CharField('Название проекта', max_length=100, unique=True)
     short_description = models.CharField('Краткое описание проекта', max_length=200, blank=True, default='')
     description = models.CharField('Описание проекта', max_length=10000, blank=True, default='')
+    content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE, help_text='Специфика', null=True)
+    object_id = models.PositiveIntegerField('ID специфики', null=True)
+    content_object = GenericForeignKey()
 
     class Meta:
         verbose_name = 'Проект'
         verbose_name_plural = 'Проекты'
+        indexes = [
+            models.Index(fields=('content_type', 'object_id'), name='index_content_type_project'),
+        ]
 
 
 class ProjectNews(DatetimeMixin, models.Model):

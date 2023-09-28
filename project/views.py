@@ -10,6 +10,7 @@ from rest_framework import status
 from django_sy_framework.utils.universal_api import API
 from project.models import Project
 from project.serializers import NewsAddSerializer, ProjectCreateSerializer, ProjectUpdateSerializer
+from project_specificity.models import get_specificities
 
 NEWS_DATE_FORMAT = '%d.%m.%Y %H:%M'
 
@@ -84,7 +85,9 @@ class ProjectView(View):
                 'facis': get_linked_object(project, API('1', 'faci'), json_data_faci, 'холстов'),
                 'notes': get_linked_object(project, API('1', 'note'), json_data_note, 'заметок'),
                 'news': news,
+                'specificity': project.content_type.model if project.content_type else None,
             },
+            'specificities': get_specificities(),
             'fields': fields,
         }
         return render(request, 'project/project_editor.html', context)
