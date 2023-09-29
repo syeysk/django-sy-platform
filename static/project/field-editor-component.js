@@ -3,7 +3,7 @@ FieldEditorComponent = {
     data() {
         return {mIsEdit: this.isEdit, errorMessage: '', prevValue: '', is_auth: IS_AUTHENTICATED};
     },
-    components: {fieldInputComponent, fieldTextareaComponent, TeleportToHeaderComponent},
+    components: {FieldInputComponent, FieldTextareaComponent, TeleportToHeaderComponent},
     emits: ['update:modelValue', 'save'],
     computed: {
         value: {

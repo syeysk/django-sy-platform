@@ -35,15 +35,21 @@
 			  var URL_PROJECT = '/edit';
 			  var URL_ADD_NEWS = '/publicate-news'
 			  var URL_SAVE_SPECIFICITY = '/save-specificity'
+			  var USERNMAE = '{{ request.user.username }}';
+			  TITLE_VERBOSE_NAME = '{{ fields.title.verbose_name }}';
+			  SHORT_DESCRIPTION_VERBOSE_NAME = '{{ fields.short_description.verbose_name }}';
+			  DESCRIPTION_VERBOSE_NAME = '{{ fields.description.verbose_name }}';
 		</script>
 
     <script>
         TeleportToHeaderComponent = {template: `<teleport to="h1"><slot/></teleport>`};
     </script>
 
-    <script src="{% static 'project/field-input-component.js' %}"></script>
-    <script src="{% static 'project/field-textarea-component.js' %}"></script>
-    <script src="{% static 'project/field-editor-component.js' %}"></script>
+    <script src="{% static 'project/field-input-component.js' %}?v=1"></script>
+    <script src="{% static 'project/field-textarea-component.js' %}?v=1"></script>
+    <script src="{% static 'project/field-editor-component.js' %}?v=1"></script>
+    <script src="{% static 'project/news-component.js' %}?v=1"></script>
+    <script src="{% static 'project/news-block-component.js' %}?v=1"></script>
 
     <script>
         function send_form(request) {
@@ -102,81 +108,6 @@
 		</script>
 
     <script src="{% static 'project/linker-component.js' %}"></script>
-
-    <script>
-			  NewsComponent = {
-			      props: ['title', 'text', 'dt_create'],
-			      components: {},
-			      template: `
-			          <h5 style="padding-left: 25px;">[[ title ]]</h5>
-			          <span style="font-size: 9pt; color: grey;">[[ dt_create ]]</span>
-			          <p>[[ text ]]</p>
-			      `,
-			  }
- 		</script>
-
-    <script>
-			  NewsBlockComponent = {
-			      props: ['project_news', 'isNew'],
-			      components: {NewsComponent},
-			      emits: ['publicate'],
-			      data() {
-			          return {isView: true, added_title: '', added_text: '', is_auth: IS_AUTHENTICATED};
-			      },
-			      methods: {
-			          startAdding(event) {
-			              this.isView = false;
-			          },
-			          publicate(project_news_for_publicating) {
-			              this.project_news.unshift(project_news_for_publicating);
-			              if (this.project_news.length > 10) {
-			                  this.project_news.pop();
-			              }
-			              this.isView = true;
-			              this.added_text = '';
-			              this.added_title = '';
-			          },
-			          on_publicate(event) {
-    			          this.$emit('publicate', this.publicate, event, this)
-			          },
-			          cancel(event) {
-			              this.isView = true;
-			              this.added_text = '';
-			              this.added_title = '';
-			          },
-			      },
-			      template: `
-			      <form v-if="!isNew">
-			          <input type="button" value="Добавить новость" class="btn btn-outline-secondary" v-if="is_auth && isView" @click="startAdding">
-			          <div v-if="!isView">
-										<div class="mb-3 form-group" id="title-group">
-												<div class="form-floating">
-														<input v-model="added_title" class="form-control" type="input" name="title" id="title-field">
-														<label for="title-field" class="form-label">Заголовок новости</label>
-												</div>
-										</div>
-										<div class="mb-3 form-group" id="text-group">
-												<div class="form-floating">
-														<textarea v-model="added_text" name="text" style="width: 100%;" rows="5" class="form-control"></textarea>
-														<label for="text-field" class="form-label">Текст новости</label>
-												</div>
-										</div>
-										<br>
-										<input type="button" value="Опубликовать" class="btn btn-outline-secondary" @click="on_publicate">
-										<input type="button" value="Отменить" class="btn btn-outline-secondary" @click="cancel">
-    							  <br><br>
-			          </div>
-			      </form>
-						<news-component
-								v-for="news in project_news"
-								:key="news.pk"
-								:title="news.title"
-								:text="news.text"
-								:dt_create="news.dt_create"
-						></news-component>
-			      `,
-			  }
- 		</script>
 
     <script>
 				SpecificitiesComponent = {
@@ -240,188 +171,7 @@
 				}
  		</script>
 
-    <script>
-        ProjectComponent = {
-            props: [],
-            components: {FieldEditorComponent, LinkerComponent, NewsBlockComponent, SpecificitiesComponent},
-            data() {
-                let project_object = JSON.parse(document.getElementById('project_json').textContent);
-                let isNew = !Boolean(project_object);
-                return {
-                    title: isNew ? '' : project_object.title,
-                    short_description: isNew ? '' : project_object.short_description,
-                    description: isNew ? '' : project_object.description,
-                    created_by: isNew ? '{{ request.user.username }}' : project_object.created_by,
-                    specificity: isNew ? '' : project_object.specificity,
-                    facis: isNew ? {} : project_object.facis,
-                    notes: isNew ? {} : project_object.notes,
-                    news: isNew ? [] : project_object.news,
-                    isNew: isNew,
-                };
-            },
-            methods: {
-                save_project(event, fieldComponent) {
-                    let self = this;
-                    let form = event.target.form;
-                    if (this.isNew) {
-                        send_form({
-                            url: window.location.href + URL_PROJECT,
-                            form: form,
-                            success: function(result) {
-                                fieldComponent.errorMessage = '';
-                                history.pushState(
-                                    null,
-                                    null,
-                                    location.href.replace('/new', '/' + result.project_id),
-                                );
-                                fieldComponent.set_view();
-                                self.isNew = false;
-                            },
-                            'self': fieldComponent,
-                        });
-                    } else {
-                        send_form({
-                            url: window.location.href + URL_PROJECT,
-                            form: form,
-                            success: function(result) {
-                                clear_status_fields(form);
-                                set_valid_field(form, result.updated_fields);
-                                self.successMessage = '';
-                                fieldComponent.set_view();
-                            },
-                            'self': fieldComponent,
-                        });
-                    }
-                },
-                publicate_news(publicate_func, event, news_component) {
-                    console.log(event)
-                    let self = this;
-                    let form = event.target.form;
-                    $.ajax({
-                        url: window.location.href + URL_ADD_NEWS,
-                        headers: {"X-CSRFToken": CSRF_TOKEN},
-                        dataType: 'json',
-                        data: {title: news_component.added_title, text: news_component.added_text},
-                        success: function(result) {
-                            publicate_func({title: news_component.added_title, text: news_component.added_text, pk: result.id, dt_create: result.dt_create});
-                            self.$.vnode.key = result.id;
-                            self.badMessage = '';
-                        },
-                        statusCode: {
-                            500: function(xhr) {
-                                self.badMessage = 'ошибка сервера'
-                            },
-                            400: function(xhr) {
-                                clear_status_fields(form);
-                                set_invalid_field(form, xhr.responseJSON);
-                                self.badMessage = '';
-                            },
-                            404: function(xhr) {
-                                self.badMessage = 'такой проект не существует'
-                            },
-                        },
-                        method: "post"
-                    });
-                }
-            },
-            template: `
-                <div class="row">
-                    <div class="col sm-6">
-												<form>
-														<field-editor-component
-														     name-editor-component="field-input-component"
-														     name-viewer-component="teleport-to-header-component"
-														     v-model="title"
-														     name="title"
-														     :is-edit="isNew"
-														     @save="save_project"
-														     verbose-name="{{ fields.title.verbose_name }}"
-														     :show-cancel-btn="!isNew"
-														>{{ fields.title.verbose_name }}</field-editor-component>
-														<br>
-														<field-editor-component
-														    name-editor-component="field-textarea-component"
-														    name-viewer-component="div"
-														    v-model="short_description"
-														    name="short_description"
-														    :disabled="isNew"
-														    :is-edit="isNew"
-														    @save="save_project"
-														    verbose-name="{{ fields.short_description.verbose_name }}"
-														    :title="isNew ? 'Пожалуйста заполните и сохраните название проекта' : ''"
-														    :show-cancel-btn="!isNew"
-														>{{ fields.short_description.verbose_name }}</field-editor-component>
-														<br>
-														<field-editor-component
-														    name-editor-component="field-textarea-component"
-														    name-viewer-component="div"
-														    v-model="description"
-														    name="description"
-														    :disabled="isNew"
-														    :is-edit="isNew"
-														    @save="save_project"
-														    verbose-name="{{ fields.description.verbose_name }}"
-														    :title="isNew ? 'Пожалуйста заполните и сохраните название проекта' : ''"
-														    :show-cancel-btn="!isNew"
-														>{{ fields.description.verbose_name }}</field-editor-component>
-												</form>
-
-												<br>
-
-                        <p>
-    												<li>Автор проекта: [[created_by]]</li>
-    										</p>
-
-                        <h4>Новости проекта</h4>
-
-    										<news-block-component
-        										:isNew="isNew"
-        										:project_news="news"
-    		    								@publicate="publicate_news"
-    										></news-block-component>
-
-                    </div>
-
-                    <div class="col sm-6">
-												<!--
-												<h4>Цели проекта</h4>
-												<h4>Связь с участниками</h4>
-												-->
-
-												<specificities-component
-												    :isNew="isNew"
-												    :specificity="specificity"
-												></specificities-component>
-
-                        <linker-component
-                            item="LinkerItemFaciComponent"
-                            title="Холсты фасилитации"
-                            :objects="facis.objects"
-                            :num-pages="facis.num_pages"
-                            :page="facis.page"
-                            create-object-text="Новая встреча"
-                            :create-object-url="facis.url_new"
-                            :show-create-btn="!isNew"
-                            :error="facis.error"
-                        ></linker-component>
-
-                        <linker-component
-                            item="LinkerItemNoteComponent"
-                            title="База знаний"
-                            :objects="notes.objects"
-                            :num-pages="notes.num_pages"
-                            :page="notes.page"
-                            create-object-text="Новая заметка"
-                            :create-object-url="notes.url_new"
-                            :show-create-btn="!isNew"
-                            :error="notes.error"
-                        ></linker-component>
-
-									  </div>
-                </div>
-            `,
-        }
-    </script>
+    <script src="{% static 'project/project-component.js' %}"></script>
 
     <script>
         const { createApp } = Vue;

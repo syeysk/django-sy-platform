@@ -1,4 +1,4 @@
-fieldInputComponent = {
+FieldInputComponent = {
     props: ['name', 'modelValue'],
     emits: ['update:modelValue'],
     computed: {
