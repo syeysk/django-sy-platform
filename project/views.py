@@ -11,6 +11,7 @@ from django_sy_framework.utils.universal_api import API
 from project.models import Project
 from project.serializers import NewsAddSerializer, ProjectCreateSerializer, ProjectUpdateSerializer
 from project_specificity.models import get_specificities
+from project_specificity.serializers import get_serializer
 
 NEWS_DATE_FORMAT = '%d.%m.%Y %H:%M'
 
@@ -76,6 +77,8 @@ class ProjectView(View):
             new['dt_create'] = new['dt_create'].strftime(NEWS_DATE_FORMAT)
             news.append(new)
 
+        specificity = project.content_type.model if project.content_type else None
+        specificity_data = get_serializer(specificity)(project.content_object).data if specificity else None
         context = {
             'project': {
                 'title': project.title,
@@ -85,7 +88,8 @@ class ProjectView(View):
                 'facis': get_linked_object(project, API('1', 'faci'), json_data_faci, 'холстов'),
                 'notes': get_linked_object(project, API('1', 'note'), json_data_note, 'заметок'),
                 'news': news,
-                'specificity': project.content_type.model if project.content_type else None,
+                'specificity': specificity,
+                'specificity_data': specificity_data,
             },
             'specificities': get_specificities(),
             'fields': fields,

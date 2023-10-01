@@ -110,8 +110,40 @@
     <script src="{% static 'project/linker-component.js' %}"></script>
 
     <script>
+        SpecificityWebportalComponent = {
+            props: ['object'],
+            data() {
+                return {mUrl: this.object.url};
+            },
+            components: {FieldInputComponent},
+            template: `
+                <div>
+                    <field-input-component v-model="mUrl" name="url">URL</field-input-component>
+                </div>
+            `
+        }
+    </script>
+
+    <script>
+        SpecificityCompostComponent = {
+            props: ['object'],
+            data() {
+                return {mUrl: this.object.url};
+            },
+            components: {},
+            template: `
+                <div>
+                    <select>
+                        <option>Test</option>
+                    </select>
+                </div>
+            `
+        }
+    </script>
+
+    <script>
 				SpecificitiesComponent = {
-				    props: ['specificity', 'isNew'],
+				    props: ['specificity', 'specificityData', 'isNew'],
 						data() {
 								let specificities = JSON.parse(document.getElementById('specificities_json').textContent);
 								return {
@@ -121,6 +153,7 @@
 										is_auth: IS_AUTHENTICATED,
 								};
 						},
+						components: {SpecificityWebportalComponent, SpecificityCompostComponent},
 						template: `
 						    <h4>Специфика проекта</h4>
 						    <form v-if="!isNew">
@@ -131,6 +164,10 @@
 												</select>
 												<label for="specificity-field">Специфика</label>
 										</div>
+										<component
+										    :is="'Specificity'+mSpecificity[0].toUpperCase()+mSpecificity.slice(1, -11)+'Component'"
+										    :object="specificityData"
+										></component>
 										<br>
 										<div v-if="badMessage">[[ badMessage ]]</div>
 										<div style="text-align: right;" v-if="is_auth">
@@ -146,9 +183,10 @@
                         url: window.location.href + URL_SAVE_SPECIFICITY,
                         headers: {"X-CSRFToken": CSRF_TOKEN},
                         dataType: 'json',
-                        data: {specificity: self.mSpecificity},
+                        data: $(form).serialize(),
                         success: function(result) {
                             self.badMessage = '';
+                            clear_status_fields(form);
                             set_valid_field(form, result.updated_fields);
                         },
                         statusCode: {
@@ -171,7 +209,7 @@
 				}
  		</script>
 
-    <script src="{% static 'project/project-component.js' %}"></script>
+    <script src="{% static 'project/project-component.js' %}?v=1"></script>
 
     <script>
         const { createApp } = Vue;

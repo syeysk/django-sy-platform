@@ -2,6 +2,8 @@ from django.contrib.contenttypes.models import ContentType
 from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
 
+from project_specificity.models import CompostSpecificity, WebportalSpecificity
+
 
 class SpecificityEditSerializer(serializers.Serializer):
     specificity = serializers.CharField(max_length=100, allow_blank=True, allow_null=True)
@@ -15,3 +17,19 @@ class SpecificityEditSerializer(serializers.Serializer):
                 raise ValidationError('Неправильное значение')
 
         return value
+
+
+class WebportalSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = WebportalSpecificity
+        fields = ['url']
+
+
+class CompostSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = CompostSpecificity
+        fields = ['resources']
+
+
+def get_serializer(content_type: str):
+    return globals()[f'{content_type[:-11].title()}Serializer']

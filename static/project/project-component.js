@@ -10,6 +10,7 @@ ProjectComponent = {
 						description: isNew ? '' : project_object.description,
 						created_by: isNew ? USERNMAE : project_object.created_by,
 						specificity: isNew ? '' : project_object.specificity,
+						specificityData: isNew ? {} : project_object.specificity_data,
 						facis: isNew ? {} : project_object.facis,
 						notes: isNew ? {} : project_object.notes,
 						news: isNew ? [] : project_object.news,
@@ -150,6 +151,7 @@ ProjectComponent = {
 								<specificities-component
 										:isNew="isNew"
 										:specificity="specificity"
+										:specificity-data="specificityData"
 								></specificities-component>
 
 								<linker-component
