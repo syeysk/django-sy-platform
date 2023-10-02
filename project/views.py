@@ -10,7 +10,7 @@ from rest_framework import status
 from django_sy_framework.utils.universal_api import API
 from project.models import Project
 from project.serializers import NewsAddSerializer, ProjectCreateSerializer, ProjectUpdateSerializer
-from project_specificity.models import get_specificities
+from project_specificity.models import CompostInputResourceSpecificity, get_specificities
 from project_specificity.serializers import get_serializer
 
 NEWS_DATE_FORMAT = '%d.%m.%Y %H:%M'
@@ -91,6 +91,7 @@ class ProjectView(View):
                 'specificity': specificity,
                 'specificity_data': specificity_data,
             },
+            'compost_input_resources': tuple(CompostInputResourceSpecificity.objects.values_list('id', 'name')),
             'specificities': get_specificities(),
             'fields': fields,
         }

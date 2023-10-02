@@ -24,6 +24,7 @@
 
     {{ project|json_script:'project_json' }}
     {{ specificities|json_script:'specificities_json' }}
+    {{ compost_input_resources|json_script:'compost_input_resources_json' }}
     <div id="app_project_id"></div>
 {% endblock %}
 
@@ -45,6 +46,7 @@
         TeleportToHeaderComponent = {template: `<teleport to="h1"><slot/></teleport>`};
     </script>
 
+    <script src="{% static 'project/window-component.js' %}"></script>
     <script src="{% static 'project/field-input-component.js' %}?v=1"></script>
     <script src="{% static 'project/field-textarea-component.js' %}?v=1"></script>
     <script src="{% static 'project/field-editor-component.js' %}?v=1"></script>
@@ -127,16 +129,28 @@
     <script>
         SpecificityCompostComponent = {
             props: ['object'],
+            components: {WindowComponent},
             data() {
-                return {mUrl: this.object.url};
+                let compost_input_resources = JSON.parse(
+								    document.getElementById('compost_input_resources_json').textContent,
+								);
+                return {
+                    mUrl: this.object.url,
+                    compostInputResources: compost_input_resources,
+                    isDisplayResourcesWindow: false,
+                };
             },
-            components: {},
             template: `
-                <div>
-                    <select>
-                        <option>Test</option>
-                    </select>
-                </div>
+                <input type="button" value="Указать принимаемое вторсырьё" class="btn btn-outline-secondary" @click="this.isDisplayResourcesWindow = true;">
+                <window-component title="Выберите принимаемое вторсырьё" v-if="isDisplayResourcesWindow" @close="this.isDisplayResourcesWindow = false;">
+										<div v-for="resource in compostInputResources" :key="resource[0]">
+												<input type="checkbox" :value="resource[0]" name="input_resource[]">
+												<span>[[ resource[1] ]]</span>
+												<br>
+												<input type="text" value="" name="input_resource_comment[]">
+										</div>
+										<input type="button" value="Сохранить" @save>
+                </window-component>
             `
         }
     </script>
@@ -165,6 +179,7 @@
 												<label for="specificity-field">Специфика</label>
 										</div>
 										<component
+										    v-if="mSpecificity"
 										    :is="'Specificity'+mSpecificity[0].toUpperCase()+mSpecificity.slice(1, -11)+'Component'"
 										    :object="specificityData"
 										></component>
