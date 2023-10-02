@@ -24,7 +24,7 @@ class SpecificityEditView(APIView):
         if not project:
             return Response(status=status.HTTP_404_NOT_FOUND)
 
-        serializer = SpecificityEditSerializer(data=request.POST)
+        serializer = SpecificityEditSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         data = serializer.validated_data
         content_type = data['specificity']
@@ -40,7 +40,7 @@ class SpecificityEditView(APIView):
 
             spec_data = get_serializer(project.content_type.model)(project.content_object).data
             # обновляем данные
-            spec_serializer = get_serializer(content_type.model)(project.content_object, data=request.POST)
+            spec_serializer = get_serializer(content_type.model)(project.content_object, data=request.data['data'])
             spec_serializer.is_valid(raise_exception=True)
             spec_serializer.save()
 

@@ -114,13 +114,15 @@
     <script>
         SpecificityWebportalComponent = {
             props: ['object'],
-            data() {
-                return {mUrl: this.object.url};
-            },
             components: {FieldInputComponent},
+            data() {
+                if (this.object.url == undefined) {
+                    this.object.url = '';
+                }
+            },
             template: `
                 <div>
-                    <field-input-component v-model="mUrl" name="url">URL</field-input-component>
+                    <field-input-component v-model="object.url" name="url">URL</field-input-component>
                 </div>
             `
         }
@@ -131,11 +133,13 @@
             props: ['object'],
             components: {WindowComponent},
             data() {
+                if (this.object.resources == undefined) {
+                    this.object.resources = new Object();
+                }
                 let compost_input_resources = JSON.parse(
 								    document.getElementById('compost_input_resources_json').textContent,
 								);
                 return {
-                    mUrl: this.object.url,
                     compostInputResources: compost_input_resources,
                     isDisplayResourcesWindow: false,
                 };
@@ -143,15 +147,33 @@
             template: `
                 <input type="button" value="Указать принимаемое вторсырьё" class="btn btn-outline-secondary" @click="this.isDisplayResourcesWindow = true;">
                 <window-component title="Выберите принимаемое вторсырьё" v-if="isDisplayResourcesWindow" @close="this.isDisplayResourcesWindow = false;">
-										<div v-for="resource in compostInputResources" :key="resource[0]">
-												<input type="checkbox" :value="resource[0]" name="input_resource[]">
+										<div v-for="resource in compostInputResources" :key="resource[0]" class="resource-item" :data-id="resource[0]">
+												<input type="checkbox" :value="resource[0]" :name="'input_resource[' +resource[0]+ ']'" @change="set_resource" :checked="object.resources[resource[0]]">
 												<span>[[ resource[1] ]]</span>
 												<br>
-												<input type="text" value="" name="input_resource_comment[]">
+												<input type="text" :value="object.resources[resource[0]] ? object.resources[resource[0]]['comment'] : ''" :name="'input_resource_comment[' +resource[0]+ ']'" @change="set_comment">
 										</div>
-										<input type="button" value="Сохранить" @save>
                 </window-component>
-            `
+            `,
+            methods: {
+                set_resource(event) {
+                    let checkbox = event.target;
+                    if (checkbox.checked) {
+                        let comment = checkbox.form['input_resource_comment[' +checkbox.value+ ']'].value;
+                        this.object.resources[checkbox.value] = {comment: comment};
+                    } else {
+                        this.object.resources[checkbox.value] = undefined;
+                    }
+                },
+                set_comment(event) {
+                    let comment = event.target.value;
+                    let resource_id = event.target.closest('.resource-item').dataset.id;
+                    let checkbox = event.target.form['input_resource[' +resource_id+ ']'];
+                    if (checkbox.checked) {
+                        this.object.resources[checkbox.value]['comment'] = comment;
+                    }
+                },
+            },
         }
     </script>
 
@@ -198,7 +220,9 @@
                         url: window.location.href + URL_SAVE_SPECIFICITY,
                         headers: {"X-CSRFToken": CSRF_TOKEN},
                         dataType: 'json',
-                        data: $(form).serialize(),
+                        contentType: 'application/json',
+                        processData: false,
+                        data: JSON.stringify({specificity: form.specificity.value, data: self.specificityData}), //$(form).serialize(),
                         success: function(result) {
                             self.badMessage = '';
                             clear_status_fields(form);
