@@ -33,22 +33,17 @@ class CompostInputResourceDetailsSpecificity(models.Model):
     compost = models.ForeignKey(
         'project_specificity.CompostSpecificity',
         on_delete=models.CASCADE,
-        related_name='detailed_resources',
+        related_name='resources',
     )
     input_resource = models.ForeignKey(
         CompostInputResourceSpecificity,
         on_delete=models.CASCADE,
-        related_name='details',
+        related_name='+',
     )
     comment = models.CharField('Комментарий', max_length=150, default='', blank=True)
 
 
 class CompostSpecificity(BaseSpecificityModel):
-    resources = models.ManyToManyField(
-        CompostInputResourceSpecificity,
-        through=CompostInputResourceDetailsSpecificity,
-        related_name='composts'
-    )
     project = GenericRelation(Project, related_query_name='compost')
 
     class Meta:

@@ -151,7 +151,7 @@
 												<input type="checkbox" :value="resource[0]" :name="'input_resource[' +resource[0]+ ']'" @change="set_resource" :checked="object.resources[resource[0]]">
 												<span>[[ resource[1] ]]</span>
 												<br>
-												<input type="text" :value="object.resources[resource[0]] ? object.resources[resource[0]]['comment'] : ''" :name="'input_resource_comment[' +resource[0]+ ']'" @change="set_comment">
+												<input type="text" :value="object.resources[resource[0]] ? object.resources[resource[0]]['comment'] : ''" :name="'input_resource_comment[' +resource[0]+ ']'" @change="set_comment" :disabled="!(object.resources[resource[0]])">
 										</div>
                 </window-component>
             `,

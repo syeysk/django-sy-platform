@@ -1,8 +1,10 @@
+import copy
+
 from django.contrib.contenttypes.models import ContentType
 from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
 
-from project_specificity.models import CompostSpecificity, WebportalSpecificity
+from project_specificity.models import CompostInputResourceDetailsSpecificity, WebportalSpecificity
 
 
 class SpecificityEditSerializer(serializers.Serializer):
@@ -25,10 +27,42 @@ class WebportalSerializer(serializers.ModelSerializer):
         fields = ['url']
 
 
-class CompostSerializer(serializers.ModelSerializer):
+class ResourcesCompostSerializer(serializers.ModelSerializer):
     class Meta:
-        model = CompostSpecificity
-        fields = ['resources']
+        model = CompostInputResourceDetailsSpecificity
+        fields = ['comment']
+
+
+class CompostSerializer(serializers.BaseSerializer):
+    def to_representation(self, instance):
+        data = {'resources': {}}
+        for resource in instance.resources.values('input_resource__id', 'comment'):
+            data['resources'][resource['input_resource__id']] = {'comment': resource['comment']}
+
+        return data
+
+    def to_internal_value(self, data):
+        data['resources'] = {int(key): value for key, value in data['resources'].items()}
+        return data
+
+    def update(self, instance, validated_data):
+        resources = copy.deepcopy(validated_data['resources'])
+        resources_to_delete = []
+        for resource in instance.resources.all():
+            if resource.pk in resources:
+                if resource.comment != resources[resource.pk]['comment']:
+                    resource.comment = resources[resource.pk]['comment']
+                    resource.save()
+
+                del resources[resource.pk]
+            else:
+                resources_to_delete.append(resource.pk)
+
+        instance.resources.filter(pk__in=resources_to_delete).delete()
+        for resource_id, data in resources.items():
+            instance.resources.create(input_resource_id=resource_id, **data)
+
+        return instance
 
 
 def get_serializer(content_type: str):
