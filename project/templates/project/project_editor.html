@@ -36,7 +36,7 @@
 			  var URL_PROJECT = '/edit';
 			  var URL_ADD_NEWS = '/publicate-news'
 			  var URL_SAVE_SPECIFICITY = '/save-specificity'
-			  var USERNMAE = '{{ request.user.username }}';
+			  var USERNAME = '{{ request.user.username }}';
 			  TITLE_VERBOSE_NAME = '{{ fields.title.verbose_name }}';
 			  SHORT_DESCRIPTION_VERBOSE_NAME = '{{ fields.short_description.verbose_name }}';
 			  DESCRIPTION_VERBOSE_NAME = '{{ fields.description.verbose_name }}';
@@ -121,9 +121,12 @@
                 }
             },
             template: `
-                <div>
+                <div v-if="IS_AUTHENTICATED">
                     <field-input-component v-model="object.url" name="url">URL</field-input-component>
                 </div>
+                <ul v-else>
+                     <li>Ссылка: <a href="[[ object.url ]]">[[ object.url ]]</a></li>
+                </ul>
             `
         }
     </script>
@@ -145,15 +148,25 @@
                 };
             },
             template: `
-                <input type="button" value="Указать принимаемое вторсырьё" class="btn btn-outline-secondary" @click="this.isDisplayResourcesWindow = true;">
-                <window-component title="Выберите принимаемое вторсырьё" v-if="isDisplayResourcesWindow" @close="this.isDisplayResourcesWindow = false;">
-										<div v-for="resource in compostInputResources" :key="resource[0]" class="resource-item" :data-id="resource[0]">
-												<input type="checkbox" :value="resource[0]" :name="'input_resource[' +resource[0]+ ']'" @change="set_resource" :checked="object.resources[resource[0]]">
-												<span>[[ resource[1] ]]</span>
-												<br>
-												<input type="text" :value="object.resources[resource[0]] ? object.resources[resource[0]]['comment'] : ''" :name="'input_resource_comment[' +resource[0]+ ']'" @change="set_comment" :disabled="!(object.resources[resource[0]])">
-										</div>
-                </window-component>
+                <div v-if="IS_AUTHENTICATED">
+                    <input type="button" value="Указать принимаемое вторсырьё" class="btn btn-outline-secondary" @click="this.isDisplayResourcesWindow = true;">
+                    <window-component title="Выберите принимаемое вторсырьё" v-if="isDisplayResourcesWindow" @close="this.isDisplayResourcesWindow = false;">
+										    <div v-for="resource in compostInputResources" :key="resource[0]" class="resource-item" :data-id="resource[0]">
+												    <input type="checkbox" :value="resource[0]" :name="'input_resource[' +resource[0]+ ']'" @change="set_resource" :checked="object.resources[resource[0]]">
+												    <span>[[ resource[1] ]]</span>
+												    <br>
+												    <input type="text" :value="object.resources[resource[0]] ? object.resources[resource[0]]['comment'] : ''" :name="'input_resource_comment[' +resource[0]+ ']'" @change="set_comment" :disabled="!(object.resources[resource[0]])">
+    										</div>
+                    </window-component>
+                </div>
+                <div v-else>
+                    Принимаемое вторсырьё:
+                    <ul>
+                         <li v-for="resourceData, resourceId in object.resources" :key="resourceId">
+                             [[ resourceData.name ]] <span v-if="resourceData.comment"> - [[ resourceData.comment ]]</span>
+                         </li>
+                    </ul>
+                </div>
             `,
             methods: {
                 set_resource(event) {

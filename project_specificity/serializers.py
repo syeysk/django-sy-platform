@@ -36,8 +36,11 @@ class ResourcesCompostSerializer(serializers.ModelSerializer):
 class CompostSerializer(serializers.BaseSerializer):
     def to_representation(self, instance):
         data = {'resources': {}}
-        for resource in instance.resources.values('input_resource__id', 'comment'):
-            data['resources'][resource['input_resource__id']] = {'comment': resource['comment']}
+        for resource in instance.resources.values('input_resource__id', 'input_resource__name', 'comment'):
+            data['resources'][resource['input_resource__id']] = {
+                'comment': resource['comment'],
+                'name': resource['input_resource__name'],
+            }
 
         return data
 
