@@ -35,18 +35,22 @@ class SpecificityEditView(APIView):
                 specificity = content_type.get_all_objects_for_this_type(project_permanent=project).first()
                 if not specificity:
                     specificity = content_type.model_class()(project_permanent=project)
+                    specificity.save()
 
                 project.content_object = specificity
 
-            spec_data = get_serializer(project.content_type.model)(project.content_object).data
-            # обновляем данные
-            spec_serializer = get_serializer(content_type.model)(project.content_object, data=request.data['data'])
-            spec_serializer.is_valid(raise_exception=True)
-            spec_serializer.save()
+            spec_serializer_class = get_serializer(project.content_type.model)
+            if spec_serializer_class:
+                spec_old_data = spec_serializer_class(project.content_object).data
+                # обновляем данные
+                spec_serializer = spec_serializer_class(project.content_object, data=request.data['data'])
+                spec_serializer.is_valid(raise_exception=True)
+                spec_new_data = spec_serializer.validated_data
+                spec_serializer.save()
 
-            updated_fields.extend(
-                [name for name, value in spec_serializer.validated_data.items() if spec_data.get(name) != value],
-            )
+                updated_fields.extend(
+                    [name for name, value in spec_new_data.items() if spec_old_data.get(name) != value],
+                )
         else:
             if project.content_type != content_type:
                 updated_fields.append('specificity')

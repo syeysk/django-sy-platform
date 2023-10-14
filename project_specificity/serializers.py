@@ -63,7 +63,9 @@ class CompostSerializer(serializers.BaseSerializer):
                 resources_to_delete.append(resource.pk)
 
         with transaction.atomic():
-            instance.resources.filter(pk__in=resources_to_delete).delete()
+            if resources_to_delete:
+                instance.resources.filter(pk__in=resources_to_delete).delete()
+
             for resource_id, data in resources.items():
                 data.pop('name')
                 instance.resources.create(input_resource_id=resource_id, **data)
@@ -72,4 +74,4 @@ class CompostSerializer(serializers.BaseSerializer):
 
 
 def get_serializer(content_type: str):
-    return globals()[f'{content_type[:-11].title()}Serializer']
+    return globals().get(f'{content_type[:-11].title()}Serializer')

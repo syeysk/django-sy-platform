@@ -78,7 +78,11 @@ class ProjectView(View):
             news.append(new)
 
         specificity = project.content_type.model if project.content_type else None
-        specificity_data = get_serializer(specificity)(project.content_object).data if specificity else None
+        specificity_data = None
+        if specificity:
+            specificity_serializer = get_serializer(specificity)
+            specificity_data = specificity_serializer(project.content_object).data if specificity_serializer else {}
+
         context = {
             'project': {
                 'title': project.title,

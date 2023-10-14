@@ -51,6 +51,22 @@ class CompostSpecificity(BaseSpecificityModel):
         verbose_name_plural = 'Компосты'
 
 
+class ProdcoopSpecificity(BaseSpecificityModel):
+    project = GenericRelation(Project, related_query_name='prodcoop')
+
+    class Meta:
+        verbose_name = 'Производственный кооператив'
+        verbose_name_plural = 'Производственные кооперативы'
+
+
+class ConsumercoopSpecificity(BaseSpecificityModel):
+    project = GenericRelation(Project, related_query_name='consumercoop')
+
+    class Meta:
+        verbose_name = 'Потребительский кооператив'
+        verbose_name_plural = 'Потребительские кооперативы'
+
+
 def get_specificities():
     return {
         subclass.__name__.lower(): subclass._meta.verbose_name for subclass in BaseSpecificityModel.__subclasses__()
