@@ -52,10 +52,6 @@ class CompostSpecificity(BaseSpecificityModel):
 
 
 def get_specificities():
-    specificities_names = []
-    for subclass in BaseSpecificityModel.__subclasses__():
-        specificities_names.append(
-            (subclass.__name__.lower(), subclass._meta.verbose_name.title()),
-        )
-
-    return specificities_names
+    return {
+        subclass.__name__.lower(): subclass._meta.verbose_name for subclass in BaseSpecificityModel.__subclasses__()
+    }

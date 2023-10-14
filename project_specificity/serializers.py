@@ -1,6 +1,7 @@
 import copy
 
 from django.contrib.contenttypes.models import ContentType
+from django.db import transaction
 from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
 
@@ -61,9 +62,11 @@ class CompostSerializer(serializers.BaseSerializer):
             else:
                 resources_to_delete.append(resource.pk)
 
-        instance.resources.filter(pk__in=resources_to_delete).delete()
-        for resource_id, data in resources.items():
-            instance.resources.create(input_resource_id=resource_id, **data)
+        with transaction.atomic():
+            instance.resources.filter(pk__in=resources_to_delete).delete()
+            for resource_id, data in resources.items():
+                data.pop('name')
+                instance.resources.create(input_resource_id=resource_id, **data)
 
         return instance
 

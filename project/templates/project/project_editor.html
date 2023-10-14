@@ -31,15 +31,14 @@
 {% block end_of_body %}
     {{ block.super }}
     <script>
-        var IS_AUTHENTICATED = {% if request.user.is_authenticated %}true{% else %}false{% endif %};
-			  var CSRF_TOKEN = "{{ csrf_token }}";
+        var HAS_ACCESS_TO_EDIT = {% if has_access_to_edit %}true{% else %}false{% endif %};
 			  var URL_PROJECT = '/edit';
 			  var URL_ADD_NEWS = '/publicate-news'
 			  var URL_SAVE_SPECIFICITY = '/save-specificity'
 			  var USERNAME = '{{ request.user.username }}';
-			  TITLE_VERBOSE_NAME = '{{ fields.title.verbose_name }}';
-			  SHORT_DESCRIPTION_VERBOSE_NAME = '{{ fields.short_description.verbose_name }}';
-			  DESCRIPTION_VERBOSE_NAME = '{{ fields.description.verbose_name }}';
+			  var TITLE_VERBOSE_NAME = '{{ fields.title.verbose_name }}';
+			  var SHORT_DESCRIPTION_VERBOSE_NAME = '{{ fields.short_description.verbose_name }}';
+			  var DESCRIPTION_VERBOSE_NAME = '{{ fields.description.verbose_name }}';
 		</script>
 
     <script>
@@ -49,9 +48,9 @@
     <script src="{% static 'project/window-component.js' %}"></script>
     <script src="{% static 'project/field-input-component.js' %}?v=1"></script>
     <script src="{% static 'project/field-textarea-component.js' %}?v=1"></script>
-    <script src="{% static 'project/field-editor-component.js' %}?v=1"></script>
+    <script src="{% static 'project/field-editor-component.js' %}?v=2"></script>
     <script src="{% static 'project/news-component.js' %}?v=1"></script>
-    <script src="{% static 'project/news-block-component.js' %}?v=1"></script>
+    <script src="{% static 'project/news-block-component.js' %}?v=2"></script>
 
     <script>
         function send_form(request) {
@@ -109,7 +108,7 @@
 			  }
 		</script>
 
-    <script src="{% static 'project/linker-component.js' %}"></script>
+    <script src="{% static 'project/linker-component.js' %}?v=1"></script>
 
     <script>
         SpecificityWebportalComponent = {
@@ -119,9 +118,10 @@
                 if (this.object.url == undefined) {
                     this.object.url = '';
                 }
+                return {has_access_to_edit: HAS_ACCESS_TO_EDIT}
             },
             template: `
-                <div v-if="IS_AUTHENTICATED">
+                <div v-if="has_access_to_edit">
                     <field-input-component v-model="object.url" name="url">URL</field-input-component>
                 </div>
                 <ul v-else>
@@ -145,10 +145,11 @@
                 return {
                     compostInputResources: compost_input_resources,
                     isDisplayResourcesWindow: false,
+                    has_access_to_edit: HAS_ACCESS_TO_EDIT,
                 };
             },
             template: `
-                <div v-if="IS_AUTHENTICATED">
+                <div v-if="has_access_to_edit">
                     <input type="button" value="Указать принимаемое вторсырьё" class="btn btn-outline-secondary" @click="this.isDisplayResourcesWindow = true;">
                     <window-component title="Выберите принимаемое вторсырьё" v-if="isDisplayResourcesWindow" @close="this.isDisplayResourcesWindow = false;">
 										    <div v-for="resource in compostInputResources" :key="resource[0]" class="resource-item" :data-id="resource[0]">
@@ -199,17 +200,17 @@
 										specificities: specificities,
 										mSpecificity: this.specificity,
 										badMessage: '',
-										is_auth: IS_AUTHENTICATED,
+										has_access_to_edit: HAS_ACCESS_TO_EDIT,
 								};
 						},
 						components: {SpecificityWebportalComponent, SpecificityCompostComponent},
 						template: `
-						    <h4>Специфика проекта</h4>
-						    <form v-if="!isNew">
-										<div class="form-floating">
+						    <h4 v-if="!isNew && (mSpecificity || has_access_to_edit)">Специфика<span v-if="!has_access_to_edit">: [[ specificities[mSpecificity] ]]</span></h4>
+						    <form v-if="!isNew && (mSpecificity || has_access_to_edit)">
+										<div class="form-floating" v-if="has_access_to_edit">
 												<select class="form-select" id="specificity-field" v-model="mSpecificity" name="specificity">
 												    <option value="null" :selected="!mSpecificity">Не выбрано</option>
-														<option :value="specificity[0]" v-for="specificity of specificities" :selected="mSpecificity == specificity[0]">[[ specificity[1] ]]</option>
+														<option :value="spec_value" v-for="(spec_name, spec_value) of specificities" :selected="mSpecificity == spec_name">[[ spec_name ]]</option>
 												</select>
 												<label for="specificity-field">Специфика</label>
 										</div>
@@ -218,9 +219,9 @@
 										    :is="'Specificity'+mSpecificity[0].toUpperCase()+mSpecificity.slice(1, -11)+'Component'"
 										    :object="specificityData"
 										></component>
-										<br>
-										<div v-if="badMessage">[[ badMessage ]]</div>
-										<div style="text-align: right;" v-if="is_auth">
+										<div style="text-align: right;" v-if="has_access_to_edit">
+										    <br>
+										    <div v-if="badMessage">[[ badMessage ]]</div>
 										    <input type="button" value="Сохранить" class="btn btn-outline-secondary" @click="save">
 										</div>
 								</form>
@@ -261,7 +262,7 @@
 				}
  		</script>
 
-    <script src="{% static 'project/project-component.js' %}?v=1"></script>
+    <script src="{% static 'project/project-component.js' %}?v=2"></script>
 
     <script>
         const { createApp } = Vue;

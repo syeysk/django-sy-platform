@@ -18,6 +18,7 @@ ProjectComponent = {
 						titleVerboseName: TITLE_VERBOSE_NAME,
 						shortDescriptionVerboseName: SHORT_DESCRIPTION_VERBOSE_NAME,
 						descriptionVerboseName: DESCRIPTION_VERBOSE_NAME,
+						has_access_to_edit: HAS_ACCESS_TO_EDIT,
 				};
 		},
 		methods: {

@@ -94,6 +94,7 @@ class ProjectView(View):
             'compost_input_resources': tuple(CompostInputResourceSpecificity.objects.values_list('id', 'name')),
             'specificities': get_specificities(),
             'fields': fields,
+            'has_access_to_edit': request.user.is_authenticated and request.user == project.created_by,
         }
         return render(request, 'project/project_editor.html', context)
 

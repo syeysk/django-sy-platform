@@ -3,7 +3,7 @@ NewsBlockComponent = {
 		components: {NewsComponent, FieldInputComponent, FieldTextareaComponent},
 		emits: ['publicate'],
 		data() {
-				return {isView: true, added_title: '', added_text: '', is_auth: IS_AUTHENTICATED};
+				return {isView: true, added_title: '', added_text: '', has_access_to_edit: HAS_ACCESS_TO_EDIT};
 		},
 		methods: {
 				startAdding(event) {
@@ -29,7 +29,7 @@ NewsBlockComponent = {
 		},
 		template: `
 		<form v-if="!isNew">
-				<input type="button" value="Добавить новость" class="btn btn-outline-secondary" v-if="is_auth && isView" @click="startAdding">
+				<input type="button" value="Добавить новость" class="btn btn-outline-secondary" v-if="has_access_to_edit && isView" @click="startAdding">
 				<div v-if="!isView">
 						<field-input-component v-model="added_title" name="title">Заголовок новости</field-input-component>
 						<field-textarea-component v-model="added_text" name="text">Текст новости</field-textarea-component>

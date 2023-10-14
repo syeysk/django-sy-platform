@@ -11,7 +11,7 @@ LinkerComponent = {
         'error',
     ],
     data() {
-       return {is_auth: IS_AUTHENTICATED};
+       return {has_access_to_edit: HAS_ACCESS_TO_EDIT};
     },
     components: {LinkerItemFaciComponent, LinkerItemNoteComponent},
     template: `
@@ -20,7 +20,7 @@ LinkerComponent = {
             <component :is="item" v-for="object in objects" :object="object" :key="object.id"></component>
        </ul>
        <p v-if="error" style="color: grey;">[[ error ]]</p>
-       <div v-if="is_auth">
+       <div v-if="has_access_to_edit">
            <div style="text-align:right;" v-if="showCreateBtn">
                <a :href="createObjectUrl" target="_blank"><button class="btn btn-outline-secondary">[[createObjectText]]</button></a>
            </div>
