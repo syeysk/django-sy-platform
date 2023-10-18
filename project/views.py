@@ -31,6 +31,16 @@ def get_linked_object(project, api, json_data, verbose_name):
     return objects
 
 
+class ProjectListMapView(View):
+    def get(self, request):
+        which = request.GET.get('which') or 'my' if request.user.is_authenticated else 'all'
+
+        context = {
+            'which': which,
+        }
+        return render(request, 'project/project_list_map.html', context)
+
+
 class ProjectListView(View):
     def get(self, request):
         page_number = request.GET.get('p', '1')
@@ -114,14 +124,14 @@ class ProjectEditView(APIView):
             if request.user.pk != project.created_by.pk:
                 return Response(status=status.HTTP_403_FORBIDDEN)
 
-            serializer = ProjectUpdateSerializer(project, data=request.POST)
+            serializer = ProjectUpdateSerializer(project, data=request.data)
             serializer.is_valid(raise_exception=True)
             response_data['updated_fields'] = [
                 name for name, value in serializer.validated_data.items() if getattr(project, name) != value
             ]
             serializer.save()
         else:
-            serializer = ProjectCreateSerializer(data=request.POST)
+            serializer = ProjectCreateSerializer(data=request.data)
             serializer.is_valid(raise_exception=True)
             project = serializer.create({**serializer.validated_data, 'created_by': request.user})
             response_data['project_id'] = project.pk

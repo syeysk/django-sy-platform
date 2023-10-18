@@ -19,16 +19,23 @@ ProjectComponent = {
 						shortDescriptionVerboseName: SHORT_DESCRIPTION_VERBOSE_NAME,
 						descriptionVerboseName: DESCRIPTION_VERBOSE_NAME,
 						has_access_to_edit: HAS_ACCESS_TO_EDIT,
+						mapPosition: [[38.90976381181011, 45.08744925143691], [38.95361336351374,45.077847139134434]],
 				};
 		},
 		methods: {
 				save_project(event, fieldComponent) {
 						let self = this;
 						let form = event.target.form;
+						data = {};
+						data[fieldComponent.name] = fieldComponent.value;
 						if (this.isNew) {
-								send_form({
+								$.ajax({
 										url: window.location.href + URL_PROJECT,
-										form: form,
+										headers: {'X-CSRFToken': CSRF_TOKEN},
+										dataType: 'json',
+										contentType: 'application/json',
+										processData: false,
+										data: JSON.stringify(data),
 										success: function(result) {
 												fieldComponent.errorMessage = '';
 												history.pushState(
@@ -38,20 +45,46 @@ ProjectComponent = {
 												);
 												fieldComponent.set_view();
 												self.isNew = false;
+										},,
+										statusCode: {
+												500: function(xhr) {
+														clear_status_fields(form);
+														self.errorMessage = 'ошибка создания';
+												},
+												400: function(xhr) {
+														self.errorMessage = '';
+														clear_status_fields(form);
+														set_invalid_field(form, xhr.responseJSON);
+												},
 										},
-										'self': fieldComponent,
+										method:'post',
 								});
 						} else {
-								send_form({
+						    $.ajax({
 										url: window.location.href + URL_PROJECT,
-										form: form,
+										headers: {'X-CSRFToken': CSRF_TOKEN},
+										dataType: 'json',
+										contentType: 'application/json',
+										processData: false,
+										data: JSON.stringify(data),
 										success: function(result) {
 												clear_status_fields(form);
 												set_valid_field(form, result.updated_fields);
 												self.successMessage = '';
 												fieldComponent.set_view();
 										},
-										'self': fieldComponent,
+										statusCode: {
+												500: function(xhr) {
+														clear_status_fields(form);
+														self.errorMessage = 'ошибка сохранения';
+												},
+												400: function(xhr) {
+														self.errorMessage = '';
+														clear_status_fields(form);
+														set_invalid_field(form, xhr.responseJSON);
+												},
+										},
+										method:'post',
 								});
 						}
 				},
@@ -98,7 +131,7 @@ ProjectComponent = {
 												 @save="save_project"
 												 :verbose-name="titleVerboseName"
 												 :show-cancel-btn="!isNew"
-										>[[ titleVerboseName ]]</field-editor-component>
+										>[[ title ]]</field-editor-component>
 										<br>
 										<field-editor-component
 												name-editor-component="field-textarea-component"
@@ -109,9 +142,9 @@ ProjectComponent = {
 												:is-edit="isNew"
 												@save="save_project"
 												:verbose-name="shortDescriptionVerboseName"
-												:title="isNew ? 'Пожалуйста заполните и сохраните название проекта' : ''"
+												:title="isNew ? 'Пожалуйста, заполните и сохраните название проекта' : ''"
 												:show-cancel-btn="!isNew"
-										>[[ shortDescriptionVerboseName ]]</field-editor-component>
+										>[[ short_description ]]</field-editor-component>
 										<br>
 										<field-editor-component
 												name-editor-component="field-textarea-component"
@@ -122,15 +155,27 @@ ProjectComponent = {
 												:is-edit="isNew"
 												@save="save_project"
 												:verbose-name="descriptionVerboseName"
-												:title="isNew ? 'Пожалуйста заполните и сохраните название проекта' : ''"
+												:title="isNew ? 'Пожалуйста, заполните и сохраните название проекта' : ''"
 												:show-cancel-btn="!isNew"
-										>[[ descriptionVerboseName ]]</field-editor-component>
+										>[[ description ]]</field-editor-component>
+										<field-editor-component
+												name-editor-component="field-map-component"
+												name-viewer-component="div"
+												v-model="mapPosition"
+												name="map_position"
+												:disabled="isNew"
+												:is-edit="isNew"
+												@save="save_project"
+												verbose-name="Местоположения"
+												:title="isNew ? 'Пожалуйста, заполните и сохраните название проекта' : ''"
+												:show-cancel-btn="!isNew"
+										>Всего местоположений: [[ mapPosition.length ]]</field-editor-component>
 								</form>
 
 								<br>
 
 								<p>
-										<li>Автор проекта: [[created_by]]</li>
+										<li>Автор: [[created_by]]</li>
 								</p>
 
 								<h4>Новости проекта</h4>

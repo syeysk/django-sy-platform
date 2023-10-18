@@ -1,0 +1,109 @@
+{% extends 'template.html' %}
+{% load static %}
+
+{% block title %}{% endblock %}
+{% block page_title %}Проекты{% endblock %}
+
+{% block start_of_head %}
+    {{ block.super }}
+    <script src="https://cdn.jsdelivr.net/npm/ol@v8.1.0/dist/ol.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/ol@v8.1.0/ol.css">
+{% endblock %}
+
+{% block content %}
+    <style>
+        h1 {
+            margin: 0;
+        }
+			  #filter_form {
+						right: 0;
+						max-width: 200px;
+						z-index: 2;
+						background-color: white;
+						opacity: 0.7;
+						padding: 0 0 0 8px;
+				}
+				#projects_map {
+				    left: 0;
+				    width: 100%;
+						z-index: 1;
+				}
+				#filter_form, #projects_map {
+    				position: absolute;
+						height: calc(100vh - 60px - 41.4px);
+				    bottom: 60px;
+				}
+				#filter_form h4 {
+				    margin-top: 3pt;
+				    margin-bottom: 3pt;
+				}
+		</style>
+
+    <form id="filter_form">
+				{% if request.user.is_authenticated %}
+						<a href="{% url 'project_create' %}"><input type="button" value="Новый проект" class="btn btn-primary"></a>
+				{% endif %}<br>
+
+				<br><b>Карта</b><br>
+				<input type="radio" name="baseLayerRadioButton" value="OSMStandard" checked>OSM Standard<br>
+				<input type="radio" name="baseLayerRadioButton" value="OSMHumanitarian">OSM Humanitarian<br>
+				<input type="radio" name="baseLayerRadioButton" value="StamenTerrain">Stamen Terrain<br>
+
+			  <br><b>Фильтр</b><br>
+			  {% if request.user.is_authenticated %}
+            <input type="radio" value="my" name="which"{% if which == 'my' %} checked{% endif %}> Мои проекты
+			  {% endif %}
+        <input type="radio" value="all" name="which"{% if which == 'all' %} checked{% endif %}> Все проекты
+			  <br><br><b>Вид деятельности</b><br>
+			  <b>Принимаемое вторсырьё</b><br>
+			  <b>Производимые ресурсы</b><br>
+
+		</form>
+    <div id="projects_map"></div>
+
+		<script>
+		    OSMStandard = new ol.layer.Tile({
+  					source: new ol.source.OSM(),
+  					visible: true,
+  					title: 'OSMStandard',
+				});
+		    OSMHumanitarian = new ol.layer.Tile({
+  					source: new ol.source.OSM({
+  					    url: 'https://{a-c}.tile.openstreetmap.fr/hot/{z}/{x}/{y}.png',
+  					}),
+  					visible: false,
+  					title: 'OSMHumanitarian',
+				});
+		    StamenTerrain = new ol.layer.Tile({
+  					source: new ol.source.XYZ({
+  					    url: 'http://tile.stamen.com/terrain/{z}/{x}/{y}.jpg',
+  					    attributions: 'Map tiles by <a href="https://stamen.com">',
+  					}),
+  					visible: false,
+  					title: 'StamenTerrain',
+				});
+
+				const baseLayersGroup = new ol.layer.Group({
+				    layers: [OSMStandard, OSMHumanitarian, StamenTerrain],
+				});
+
+				const map = new ol.Map({
+						target: 'projects_map',
+						layers: [OSMStandard],
+						view: new ol.View({
+				  			center: [0, 0],
+					   		zoom: 2,
+						}),
+				});
+				map.addLayer(baseLayersGroup);
+
+        for (let radioButton of filter_form.baseLayerRadioButton) {
+            radioButton.addEventListener('change', function(event) {
+								baseLayersGroup.getLayers().forEach(function(element, index, array) {
+										element.setVisible(element.get('title') === event.target.value);
+								});
+						});
+				}
+		</script>
+
+{% endblock %}

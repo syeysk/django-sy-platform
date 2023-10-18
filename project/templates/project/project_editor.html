@@ -4,6 +4,12 @@
 {% block title %}{% endblock %}
 {% block page_title %}Проект | {{ project.title }}{% endblock %}
 
+{% block start_of_head %}
+    {{ block.super }}
+    <script src="https://cdn.jsdelivr.net/npm/ol@v8.1.0/dist/ol.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/ol@v8.1.0/ol.css">
+{% endblock %}
+
 {% block content %}
     <style>
         .mb-3 {
@@ -48,43 +54,10 @@
     <script src="{% static 'project/window-component.js' %}"></script>
     <script src="{% static 'project/field-input-component.js' %}?v=1"></script>
     <script src="{% static 'project/field-textarea-component.js' %}?v=1"></script>
-    <script src="{% static 'project/field-editor-component.js' %}?v=2"></script>
+    <script src="{% static 'project/field-map-component.js' %}?v=6"></script>
+    <script src="{% static 'project/field-editor-component.js' %}?v=6"></script>
     <script src="{% static 'project/news-component.js' %}?v=1"></script>
     <script src="{% static 'project/news-block-component.js' %}?v=2"></script>
-
-    <script>
-        function send_form(request) {
-            /*
-            Required fields: url, success, self, form
-            Not required: headers, statusCode, post, dataType, data
-            */
-            let headers = request.headers || {};
-            headers['X-CSRFToken'] = CSRF_TOKEN;
-            let form = request.form;
-
-            statusCode = request.statusCode || {
-								500: function(xhr) {
-								    clear_status_fields(form);
-										request.self.errorMessage = 'ошибка сохранения';
-								},
-								400: function(xhr) {
-										request.self.errorMessage = '';
-										clear_status_fields(form);
-										set_invalid_field(form, xhr.responseJSON);
-								},
-						}
-
-            $.ajax({
-                url: request.url,
-                headers: headers,
-                dataType: request.dataType || 'json',
-                data: request.data || $(form).serialize(),
-                success: request.success,
-                statusCode: statusCode,
-                method: request.method || "post",
-            });
-        }
-    </script>
 
     <script>
 			  LinkerItemFaciComponent = {
@@ -236,7 +209,7 @@
                         dataType: 'json',
                         contentType: 'application/json',
                         processData: false,
-                        data: JSON.stringify({specificity: form.specificity.value, data: self.specificityData}), //$(form).serialize(),
+                        data: JSON.stringify({specificity: form.specificity.value, data: self.specificityData}),
                         success: function(result) {
                             self.badMessage = '';
                             clear_status_fields(form);
@@ -262,7 +235,7 @@
 				}
  		</script>
 
-    <script src="{% static 'project/project-component.js' %}?v=2"></script>
+    <script src="{% static 'project/project-component.js' %}?v=7"></script>
 
     <script>
         const { createApp } = Vue;
