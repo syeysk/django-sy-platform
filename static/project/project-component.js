@@ -45,7 +45,7 @@ ProjectComponent = {
 												);
 												fieldComponent.set_view();
 												self.isNew = false;
-										},,
+										},
 										statusCode: {
 												500: function(xhr) {
 														clear_status_fields(form);
