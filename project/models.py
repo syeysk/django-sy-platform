@@ -2,6 +2,7 @@ from django.contrib.auth import get_user_model
 from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.contenttypes.models import ContentType
 from django.db import models
+from django.contrib.gis.db import models as gis_models
 
 from django_sy_framework.utils.mixins import DatetimeMixin
 
@@ -32,3 +33,8 @@ class ProjectNews(DatetimeMixin, models.Model):
     class Meta:
         verbose_name = 'Новость проект'
         verbose_name_plural = 'Новости проекта'
+
+
+class GeoPointProject(gis_models.Model):
+    project = models.ForeignKey(Project, on_delete=models.CASCADE, related_name='geo_points')
+    point = gis_models.PointField(verbose_name='Позиция на карте')

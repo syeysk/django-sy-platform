@@ -19,7 +19,7 @@ ProjectComponent = {
 						shortDescriptionVerboseName: SHORT_DESCRIPTION_VERBOSE_NAME,
 						descriptionVerboseName: DESCRIPTION_VERBOSE_NAME,
 						has_access_to_edit: HAS_ACCESS_TO_EDIT,
-						mapPosition: [[38.90976381181011, 45.08744925143691], [38.95361336351374,45.077847139134434]],
+						geoPoints: project_object.geo_points,//[[38.90976381181011, 45.08744925143691], [38.95361336351374,45.077847139134434]],
 				};
 		},
 		methods: {
@@ -161,15 +161,15 @@ ProjectComponent = {
 										<field-editor-component
 												name-editor-component="field-map-component"
 												name-viewer-component="div"
-												v-model="mapPosition"
-												name="map_position"
+												v-model="geoPoints"
+												name="geo_points"
 												:disabled="isNew"
 												:is-edit="isNew"
 												@save="save_project"
 												verbose-name="Местоположения"
 												:title="isNew ? 'Пожалуйста, заполните и сохраните название проекта' : ''"
 												:show-cancel-btn="!isNew"
-										>Всего местоположений: [[ mapPosition.length ]]</field-editor-component>
+										>Всего местоположений: [[ geoPoints.length ]]</field-editor-component>
 								</form>
 
 								<br>

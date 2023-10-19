@@ -54,7 +54,7 @@
     <script src="{% static 'project/window-component.js' %}"></script>
     <script src="{% static 'project/field-input-component.js' %}?v=1"></script>
     <script src="{% static 'project/field-textarea-component.js' %}?v=1"></script>
-    <script src="{% static 'project/field-map-component.js' %}?v=6"></script>
+    <script src="{% static 'project/field-map-component.js' %}?v=7"></script>
     <script src="{% static 'project/field-editor-component.js' %}?v=6"></script>
     <script src="{% static 'project/news-component.js' %}?v=1"></script>
     <script src="{% static 'project/news-block-component.js' %}?v=2"></script>
@@ -178,14 +178,14 @@
 						},
 						components: {SpecificityWebportalComponent, SpecificityCompostComponent},
 						template: `
-						    <h4 v-if="!isNew && (mSpecificity || has_access_to_edit)">Специфика<span v-if="!has_access_to_edit">: [[ specificities[mSpecificity] ]]</span></h4>
+						    <h4 v-if="!isNew && (mSpecificity || has_access_to_edit)">Вид деятельности<span v-if="!has_access_to_edit">: [[ specificities[mSpecificity] ]]</span></h4>
 						    <form v-if="!isNew && (mSpecificity || has_access_to_edit)">
 										<div class="form-floating" v-if="has_access_to_edit">
 												<select class="form-select" id="specificity-field" v-model="mSpecificity" name="specificity">
 												    <option value="null" :selected="!mSpecificity">Не выбрано</option>
 														<option :value="spec_value" v-for="(spec_name, spec_value) of specificities" :selected="mSpecificity == spec_name">[[ spec_name ]]</option>
 												</select>
-												<label for="specificity-field">Специфика</label>
+												<label for="specificity-field">Вид деятельности</label>
 										</div>
 										<component
 										    v-if="mSpecificity"
@@ -235,7 +235,7 @@
 				}
  		</script>
 
-    <script src="{% static 'project/project-component.js' %}?v=7"></script>
+    <script src="{% static 'project/project-component.js' %}?v=8"></script>
 
     <script>
         const { createApp } = Vue;

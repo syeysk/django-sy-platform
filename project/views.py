@@ -104,6 +104,7 @@ class ProjectView(View):
                 'news': news,
                 'specificity': specificity,
                 'specificity_data': specificity_data,
+                'geo_points': [list(point) for point in project.geo_points.values_list('point', flat=True)],
             },
             'compost_input_resources': tuple(CompostInputResourceSpecificity.objects.values_list('id', 'name')),
             'specificities': get_specificities(),
@@ -123,6 +124,23 @@ class ProjectEditView(APIView):
             project = get_object_or_404(Project, pk=pk)
             if request.user.pk != project.created_by.pk:
                 return Response(status=status.HTTP_403_FORBIDDEN)
+
+            if 'geo_points' in request.data:
+                from django.contrib.gis.geos import Point
+                from django.db.models import Q
+                new_points = set([tuple(point_list) for point_list in request.data['geo_points']])
+                current_points = set(tuple(point) for point in project.geo_points.values_list('point', flat=True))
+                points_to_add = new_points - current_points
+                points_to_delete = current_points - new_points
+                for point_list in points_to_add:
+                    project.geo_points.create(point=Point(*point_list))
+
+                if points_to_delete:
+                    points = [Point(*point_list) for point_list in points_to_delete]
+                    q = Q(point=points[0])
+                    for point in points[1:]:
+                        q |= Q(point=point)
+                    project.geo_points.filter(q).delete()
 
             serializer = ProjectUpdateSerializer(project, data=request.data)
             serializer.is_valid(raise_exception=True)

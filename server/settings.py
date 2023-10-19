@@ -40,6 +40,7 @@ INSTALLED_APPS = [
     'pages',
     'project',
     'project_specificity',
+    'django.contrib.gis',
 ]
 
 MIDDLEWARE = [
@@ -74,7 +75,7 @@ SECRET_KEY = env('SECRET_KEY')
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
+        'ENGINE': 'django.contrib.gis.db.backends.spatialite',
         'NAME': BASE_DIR / '.sqlite3.db',
     }
 }
@@ -146,3 +147,10 @@ MICROSERVICES_URLS = {
     'faci': env('MICROSERVICE_URL_FACI'),
     'note': env('MICROSERVICE_URL_NOTE'),
 }
+
+
+# for GeoDjango
+
+GDAL_LIBRARY_PATH = str(BASE_DIR / 'venv/Lib/site-packages/osgeo/gdal304.dll')
+GEOS_LIBRARY_PATH = str(BASE_DIR / 'venv/Lib/site-packages/osgeo/geos_c.dll')
+SPATIALITE_LIBRARY_PATH = 'mod_spatialite'

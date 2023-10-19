@@ -12,7 +12,7 @@ FieldMapComponent = {
         },
     },
     data() {
-        return {baseLayersGroup: null};
+        return {baseLayersGroup: null, feature_id: 1};
     },
     mounted() {
 		    OSMStandard = new ol.layer.Tile({
@@ -40,32 +40,68 @@ FieldMapComponent = {
 				    layers: [OSMStandard, OSMHumanitarian, StamenTerrain],
 				});
 
+				this.view = new ol.View({
+						center: [0, 0],
+						zoom: 2,
+				})
+
 				const map = new ol.Map({
 						target: 'project_map',
 						layers: [OSMStandard],
-						view: new ol.View({
-				  			center: [0, 0],
-					   		zoom: 2,
-						}),
+						view: this.view,
 				});
 				map.addLayer(this.baseLayersGroup);
 
+        let self = this;
         function add_point(coord, transform) {
 						const Point = new ol.geom.Point(
 								//ol.proj.fromLonLat(coord)
 								transform ? ol.proj.transform(coord, 'EPSG:4326', 'EPSG:3857') : coord
 						);
 						const feature = new ol.Feature(Point);
+						feature.setId(self.feature_id);
+						self.feature_id += 1;
 
-						this.vector_source = new ol.source.Vector({
+						let vector_source = new ol.source.Vector({
 								features: [feature],
 						})
 
-						this.point_layer = new ol.layer.VectorImage({
-								source: this.vector_source,
+						let point_layer = new ol.layer.VectorImage({
+								source: vector_source,
 								title: 'Проект',
 						});
-						map.addLayer(this.point_layer);
+						map.addLayer(point_layer);
+				}
+
+				function delete_feature(feature) {
+    				const featureId = feature.getId();
+						map.getLayers().getArray().forEach(layer => {
+						    if (!layer.getSource) return;
+							  const source = layer.getSource();
+						    if (!source.getFeatureById) return;
+						    console.log(featureId, feature);
+								const featureExists = source.getFeatureById(featureId);
+								if (featureExists) {
+								  	source.removeFeature(feature);
+								  	map.removeLayer(layer);
+								  	return;
+							  }
+    		    })
+				}
+
+				function actualize_value() {
+    				let value = []
+     				for (let layer of map.getAllLayers()) {
+     				    let source = layer.getSource();
+     				    if (source.getFeatures) {
+										let features = source.getFeatures();
+										if (features && features[0].getGeometry) {
+										    let feature_coords = features[0].getGeometry().getCoordinates();
+    										value[value.length] = ol.proj.transform(feature_coords, 'EPSG:3857', 'EPSG:4326');
+    							  }
+								}
+     				}
+     				self.value = value;
 				}
 
 				for (let point of this.value) {
@@ -79,27 +115,24 @@ FieldMapComponent = {
  				this.$el.nextElementSibling.style.width = '100%';
  				this.$el.nextElementSibling.style.textAlign = 'center';
 
-        let self = this;
  				map.on('click', function(event) {
+ 				    let features_to_delete = [];
+            map.forEachFeatureAtPixel(event.pixel, function(feature,layer) {
+								features_to_delete.push(feature);
+						});
+						if (features_to_delete.length > 1) {
+    						self.view.animate({zoom: self.view.getZoom() + 1.5})
+    						return;
+    				}
+						if (features_to_delete.length == 1) {
+						    console.log(['will delete', features_to_delete]);
+						    delete_feature(features_to_delete[0]);
+						    actualize_value();
+						    return;
+						}
+
      				add_point(event.coordinate, false);
-     				let value = []
-     				for (let layer of this.getAllLayers()) {
-     				    let source = layer.getSource();
-     				    if (source.getFeatures) {
-										let features = source.getFeatures();
-										if (features && features[0].getGeometry) {
-										    let feature_coords = features[0].getGeometry().getCoordinates();
-    										value[value.length] = ol.proj.transform(feature_coords, 'EPSG:3857', 'EPSG:4326');
-    							  }
-								}
-     				}
-     				self.value = value;
- 				    //let vectorContext = ol.render.getVectorContext(event);
-						//let point = new ol.geom.Point(event.coordinate);
-						//let feature = new ol.Feature(Point);
-						//self.vector_source.addFeature(feature);
-						//vectorContext.drawGeometry(point);
-						//map.render();
+     				actualize_value();
  				})
     },
     methods: {

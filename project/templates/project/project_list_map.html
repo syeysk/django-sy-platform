@@ -104,6 +104,11 @@
 								});
 						});
 				}
+
+				map.on('moveend', function(event) {
+				    console.log(map.getEventCoordinate(event));
+				    console.log(map.getView());
+				});
 		</script>
 
 {% endblock %}
