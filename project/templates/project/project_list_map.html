@@ -39,6 +39,14 @@
 				}
 		</style>
 
+    {{ points|json_script:'points_json' }}
+    {{ projects|json_script:'projects_json' }}
+
+    <div id="popup" class="ol-popup">
+  			<span id="popup-closer" class="ol-popup-closer">X</span>
+			  <div id="popup-content">blabla</div>
+		</div>
+
     <form id="filter_form">
 				{% if request.user.is_authenticated %}
 						<a href="{% url 'project_create' %}"><input type="button" value="Новый проект" class="btn btn-primary"></a>
@@ -57,7 +65,6 @@
 			  <br><br><b>Вид деятельности</b><br>
 			  <b>Принимаемое вторсырьё</b><br>
 			  <b>Производимые ресурсы</b><br>
-
 		</form>
     <div id="projects_map"></div>
 
@@ -87,13 +94,15 @@
 				    layers: [OSMStandard, OSMHumanitarian, StamenTerrain],
 				});
 
+				var map_view = new ol.View({
+						center: [0, 0],
+						zoom: 2,
+				})
+
 				const map = new ol.Map({
 						target: 'projects_map',
 						layers: [OSMStandard],
-						view: new ol.View({
-				  			center: [0, 0],
-					   		zoom: 2,
-						}),
+						view: map_view,
 				});
 				map.addLayer(baseLayersGroup);
 
@@ -105,9 +114,108 @@
 						});
 				}
 
+        /* Отображаем точки */
+
+				let vector_source = new ol.source.Vector({
+						features: [],
+				})
+				let point_layer = new ol.layer.VectorImage({
+						source: vector_source,
+						title: 'Проект',
+				});
+				map.addLayer(point_layer);
+
+				function add_points(points) {
+						feature_id = 1;
+						for (let point of points) {
+								const Point = new ol.geom.Point(
+										ol.proj.transform(point.point, 'EPSG:4326', 'EPSG:3857')
+								);
+								const feature = new ol.Feature(Point);
+								feature.setId(feature_id+'-'+point.project_id);
+								vector_source.addFeature(feature);
+								feature_id += 1;
+						}
+				}
+
+				let projects = JSON.parse(document.getElementById('projects_json').textContent);
+				let points = JSON.parse(document.getElementById('points_json').textContent);
+				add_points(points);
+
+				/* Всплывашки :) */
+
+        var container = document.getElementById('popup');
+        var content = document.getElementById('popup-content');
+        var closer = document.getElementById('popup-closer');
+
+        var popup_overlay = new ol.Overlay({
+            element: container,
+            autoPan: true,
+            autoPanAnimation: {
+                duration: 250,
+            },
+        });
+        map.addOverlay(popup_overlay);
+
+        closer.addEventListener('click', function(event) {
+            popup_overlay.setPosition(undefined);
+            closer.blur();
+            return false;
+        });
+
+        map.on('singleclick', function(event) {
+            content.innerHTML = '';
+            let resolution = map_view.getResolution();
+            console.log(resolution);
+            console.log(event.coordinate);
+
+            let features = [];
+            map.forEachFeatureAtPixel(event.pixel, function(feature, layer) {
+								features.push(feature);
+						});
+						if (features.length) {
+						    let feature = features[0];
+								let project_id = feature.getId().split('-')[1];
+								let project = projects[project_id];
+								console.log([project_id, project, feature]);
+								content.innerHTML = '<b>'+project.title+'</b><br><br><a href="test" target="_blank">Подробнее</a>';
+								popup_overlay.setPosition(event.coordinate);
+						} else {
+						    popup_overlay.setPosition(undefined);
+						}
+        });
+
+        /* Обновление точек */
+
 				map.on('moveend', function(event) {
-				    console.log(map.getEventCoordinate(event));
-				    console.log(map.getView());
+				    let polygon = map.getView().calculateExtent(map.getSize());
+				    console.log(polygon);
+				    point_left_bottom = ol.proj.transform([polygon[0], polygon[1]], 'EPSG:3857', 'EPSG:4326');
+				    point_right_top = ol.proj.transform([polygon[2], polygon[3]], 'EPSG:3857', 'EPSG:4326');
+				    polygon = [point_left_bottom[0], point_left_bottom[1], point_right_top[0], point_right_top[1]];
+				    console.log(polygon);
+				    data = {filter: {which: filter_form.which.value}, polygon: polygon}
+				    $.ajax({
+								url: window.location.href + 'get_points/',
+								headers: {'X-CSRFToken': CSRF_TOKEN},
+								dataType: 'json',
+								contentType: 'application/json',
+								processData: false,
+								data: JSON.stringify(data),
+								success: function(result) {
+								    console.log(result);
+                    vector_source.clear();
+								    window.projects = result.projects;
+								    add_points(result.points);
+								},
+								statusCode: {
+										500: function(xhr) {
+										},
+										400: function(xhr) {
+										},
+								},
+								method:'post',
+						});
 				});
 		</script>
 

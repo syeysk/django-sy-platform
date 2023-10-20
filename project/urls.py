@@ -1,6 +1,7 @@
 from django.urls import path
 
 from project.views import (
+    GetPointsView,
     NewsAddView,
     ProjectEditView,
     ProjectListMapView,
@@ -20,5 +21,6 @@ urlpatterns = [
     path('<int:project_pk>/publicate-news', NewsAddView.as_view(), name='project_add_new_post'),
     path('<int:project_pk>/save-specificity', SpecificityEditView.as_view(), name='project_edit_specificity_post'),
     path('map/', ProjectListMapView.as_view(), name='project_list_map'),
+    path('map/get_points/', GetPointsView.as_view(), name='get_points'),
     path('', ProjectListView.as_view(), name='project_list'),
 ]

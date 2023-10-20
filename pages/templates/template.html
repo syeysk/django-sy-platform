@@ -15,7 +15,8 @@
     <meta name="theme-color" content="#ffffff">
 {% endblock %}
 {% block menu_items_microservice %}
-    {% include "base/menu_items_microservice.html" with url_name="project_list" url_title="Проекты" %}
+    {% include "base/menu_items_microservice.html" with url_name="project_list" url_title="Проекты списком" %}
+    {% include "base/menu_items_microservice.html" with url_name="project_list_map" url_title="Проекты на карте" %}
 {% endblock %}
 {% block source_code_link %}
     <a href="https://github.com/syeysk/django-sy-platform" target="_blank">GitHub</a>

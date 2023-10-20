@@ -1,4 +1,6 @@
+from django.contrib.gis.geos import Point, Polygon
 from django.core.paginator import Paginator
+from django.db.models import Q
 from django.http import Http404
 from django.shortcuts import get_object_or_404, render
 from django.views import View
@@ -8,7 +10,7 @@ from rest_framework.views import APIView
 from rest_framework import status
 
 from django_sy_framework.utils.universal_api import API
-from project.models import Project
+from project.models import Project, GeoPointProject
 from project.serializers import NewsAddSerializer, ProjectCreateSerializer, ProjectUpdateSerializer
 from project_specificity.models import CompostInputResourceSpecificity, get_specificities
 from project_specificity.serializers import get_serializer
@@ -35,10 +37,44 @@ class ProjectListMapView(View):
     def get(self, request):
         which = request.GET.get('which') or 'my' if request.user.is_authenticated else 'all'
 
+        points = GeoPointProject.objects.all()[:100]
+        points_serialized = []
+        projects_data = {}
+        for point in points:
+            points_serialized.append(
+                {'point': list(point.point), 'project_id': point.project.pk}
+            )
+            projects_data[point.project.pk] = {'title': point.project.title}
+
         context = {
             'which': which,
+            'points': points_serialized,
+            'projects': projects_data,
         }
         return render(request, 'project/project_list_map.html', context)
+
+
+class GetPointsView(APIView):
+    def post(self, request):
+        filter_values = request.data['filter']
+        which = filter_values['which']
+        polygon = Polygon.from_bbox(request.data['polygon'])
+
+        points = GeoPointProject.objects.filter(point__contained=polygon)[:100]
+        points_serialized = []
+        projects_data = {}
+        for point in points:
+            points_serialized.append(
+                {'point': list(point.point), 'project_id': point.project.pk}
+            )
+            projects_data[point.project.pk] = {'title': point.project.title}
+
+        response_data = {
+            'which': which,
+            'points': points_serialized,
+            'projects': projects_data,
+        }
+        return Response(status=status.HTTP_200_OK, data=response_data)
 
 
 class ProjectListView(View):
@@ -126,8 +162,6 @@ class ProjectEditView(APIView):
                 return Response(status=status.HTTP_403_FORBIDDEN)
 
             if 'geo_points' in request.data:
-                from django.contrib.gis.geos import Point
-                from django.db.models import Q
                 new_points = set([tuple(point_list) for point_list in request.data['geo_points']])
                 current_points = set(tuple(point) for point in project.geo_points.values_list('point', flat=True))
                 points_to_add = new_points - current_points

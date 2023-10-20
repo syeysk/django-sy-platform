@@ -12,7 +12,7 @@ FieldMapComponent = {
         },
     },
     data() {
-        return {baseLayersGroup: null, feature_id: 1};
+        return {baseLayersGroup: null, feature_id: 1, map: null};
     },
     mounted() {
 		    OSMStandard = new ol.layer.Tile({
@@ -51,61 +51,11 @@ FieldMapComponent = {
 						view: this.view,
 				});
 				map.addLayer(this.baseLayersGroup);
+				this.map = map;
 
         let self = this;
-        function add_point(coord, transform) {
-						const Point = new ol.geom.Point(
-								//ol.proj.fromLonLat(coord)
-								transform ? ol.proj.transform(coord, 'EPSG:4326', 'EPSG:3857') : coord
-						);
-						const feature = new ol.Feature(Point);
-						feature.setId(self.feature_id);
-						self.feature_id += 1;
-
-						let vector_source = new ol.source.Vector({
-								features: [feature],
-						})
-
-						let point_layer = new ol.layer.VectorImage({
-								source: vector_source,
-								title: 'Проект',
-						});
-						map.addLayer(point_layer);
-				}
-
-				function delete_feature(feature) {
-    				const featureId = feature.getId();
-						map.getLayers().getArray().forEach(layer => {
-						    if (!layer.getSource) return;
-							  const source = layer.getSource();
-						    if (!source.getFeatureById) return;
-						    console.log(featureId, feature);
-								const featureExists = source.getFeatureById(featureId);
-								if (featureExists) {
-								  	source.removeFeature(feature);
-								  	map.removeLayer(layer);
-								  	return;
-							  }
-    		    })
-				}
-
-				function actualize_value() {
-    				let value = []
-     				for (let layer of map.getAllLayers()) {
-     				    let source = layer.getSource();
-     				    if (source.getFeatures) {
-										let features = source.getFeatures();
-										if (features && features[0].getGeometry) {
-										    let feature_coords = features[0].getGeometry().getCoordinates();
-    										value[value.length] = ol.proj.transform(feature_coords, 'EPSG:3857', 'EPSG:4326');
-    							  }
-								}
-     				}
-     				self.value = value;
-				}
-
 				for (let point of this.value) {
-    				add_point(point, true);
+    				this.add_point(point, true);
     		}
 
  				this.$el.nextElementSibling.style.position = 'fixed';
@@ -125,14 +75,13 @@ FieldMapComponent = {
     						return;
     				}
 						if (features_to_delete.length == 1) {
-						    console.log(['will delete', features_to_delete]);
-						    delete_feature(features_to_delete[0]);
-						    actualize_value();
+						    self.delete_feature(features_to_delete[0]);
+						    self.actualize_value();
 						    return;
 						}
 
-     				add_point(event.coordinate, false);
-     				actualize_value();
+     				self.add_point(event.coordinate, false);
+     				self.actualize_value();
  				})
     },
     methods: {
@@ -141,6 +90,53 @@ FieldMapComponent = {
 								element.setVisible(element.get('title') === event.target.value);
 						});
         },
+        add_point(coord, transform) {
+						const Point = new ol.geom.Point(
+								//ol.proj.fromLonLat(coord)
+								transform ? ol.proj.transform(coord, 'EPSG:4326', 'EPSG:3857') : coord
+						);
+						const feature = new ol.Feature(Point);
+						feature.setId(this.feature_id);
+						this.feature_id += 1;
+
+						let vector_source = new ol.source.Vector({
+								features: [feature],
+						})
+
+						let point_layer = new ol.layer.VectorImage({
+								source: vector_source,
+								title: 'Проект',
+						});
+						this.map.addLayer(point_layer);
+				},
+				delete_feature(feature) {
+    				const featureId = feature.getId();
+						this.map.getLayers().getArray().forEach(layer => {
+						    if (!layer.getSource) return;
+							  const source = layer.getSource();
+						    if (!source.getFeatureById) return;
+								const featureExists = source.getFeatureById(featureId);
+								if (featureExists) {
+								  	source.removeFeature(feature);
+								  	this.map.removeLayer(layer);
+								  	return;
+							  }
+    		    })
+				},
+				actualize_value() {
+    				let value = []
+     				for (let layer of this.map.getAllLayers()) {
+     				    let source = layer.getSource();
+     				    if (source.getFeatures) {
+										let features = source.getFeatures();
+										if (features && features[0].getGeometry) {
+										    let feature_coords = features[0].getGeometry().getCoordinates();
+    										value[value.length] = ol.proj.transform(feature_coords, 'EPSG:3857', 'EPSG:4326');
+    							  }
+								}
+     				}
+     				this.value = value;
+				},
     },
     template: `
         <div>
