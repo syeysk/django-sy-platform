@@ -172,11 +172,9 @@ ProjectComponent = {
 										>Всего местоположений: [[ geoPoints.length ]]</field-editor-component>
 								</form>
 
-								<br>
-
-								<p>
-										<li>Автор: [[created_by]]</li>
-								</p>
+								<!--<br><p>
+										<li>Добавлено пользователем: [[created_by]]</li>
+								</p>-->
 
 								<h4>Новости проекта</h4>
 

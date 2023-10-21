@@ -35,21 +35,8 @@ def get_linked_object(project, api, json_data, verbose_name):
 
 class ProjectListMapView(View):
     def get(self, request):
-        which = request.GET.get('which') or 'my' if request.user.is_authenticated else 'all'
-
-        points = GeoPointProject.objects.all()[:100]
-        points_serialized = []
-        projects_data = {}
-        for point in points:
-            points_serialized.append(
-                {'point': list(point.point), 'project_id': point.project.pk}
-            )
-            projects_data[point.project.pk] = {'title': point.project.title}
-
         context = {
-            'which': which,
-            'points': points_serialized,
-            'projects': projects_data,
+            'specificities': get_specificities(),
         }
         return render(request, 'project/project_list_map.html', context)
 
@@ -58,9 +45,20 @@ class GetPointsView(APIView):
     def post(self, request):
         filter_values = request.data['filter']
         which = filter_values['which']
+        specificity = filter_values['specificity']
         polygon = Polygon.from_bbox(request.data['polygon'])
 
-        points = GeoPointProject.objects.filter(point__contained=polygon)[:100]
+        filters = {}
+        if which == 'my':
+            filters['project__created_by'] = request.user
+
+        if specificity:
+            if specificity == 'null':
+                filters[f'project__object_id__isnull'] = True
+            else:
+                filters[f'project__{specificity}__isnull'] = False
+
+        points = GeoPointProject.objects.filter(point__contained=polygon, **filters)[:100]
         points_serialized = []
         projects_data = {}
         for point in points:

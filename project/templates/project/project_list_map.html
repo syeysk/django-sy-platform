@@ -37,17 +37,60 @@
 				    margin-top: 3pt;
 				    margin-bottom: 3pt;
 				}
+				.ol-popup {
+				    background: white;
+				    border-radius: 8px;
+				    border: 1px solid #b8b6b6;
+				    padding: 5px 10px 5px 10px;
+				    position: absolute;
+				    left: -50px;
+				    bottom: 12px;
+				    max-width: 300px;
+				    min-width: 200px;
+				    text-align: left;
+				}
+				.ol-popup:after, .ol-popup:before {
+				    top: 100%;
+				    border: solid transparent;
+				    content: '';
+				    height: 0;
+				    width: 0;
+				    position: absolute;
+				    pointer-events: none;
+				}
+				.ol-popup:after {
+				    border-top-color: white;
+				    border-width: 10px;
+				    left: 48px;
+				    margin-left: -10px;
+				    margin-top: -1px;
+				}
+				.ol-popup:before {
+				    border-top-color: #b8b6b6;
+				    border-width: 11px;
+				    left: 48px;
+				    margin-left: -11px;
+				}
+				.ol-popup-content {
+				    font-size: 0.8rem;
+				}
+				.ol-popup-closer {
+				    cursor: pointer;
+				    position: absolute;
+				    top: -10px;
+				    right: 0;
+				    padding: 0;
+				    text-decoration: none;
+				    font-size: 21px;
+				}
 		</style>
 
-    {{ points|json_script:'points_json' }}
-    {{ projects|json_script:'projects_json' }}
-
     <div id="popup" class="ol-popup">
-  			<span id="popup-closer" class="ol-popup-closer">X</span>
-			  <div id="popup-content">blabla</div>
+  			<span id="popup-closer" class="ol-popup-closer">&times;</span>
+			  <div id="popup-content" class="ol-popup-content">blabla</div>
 		</div>
 
-    <form id="filter_form">
+    <form id="filter_form" onchange="update_points();">
 				{% if request.user.is_authenticated %}
 						<a href="{% url 'project_create' %}"><input type="button" value="Новый проект" class="btn btn-primary"></a>
 				{% endif %}<br>
@@ -59,10 +102,21 @@
 
 			  <br><b>Фильтр</b><br>
 			  {% if request.user.is_authenticated %}
-            <input type="radio" value="my" name="which"{% if which == 'my' %} checked{% endif %}> Мои проекты
+            <input type="radio" value="my" name="which"> Мои проекты
 			  {% endif %}
-        <input type="radio" value="all" name="which"{% if which == 'all' %} checked{% endif %}> Все проекты
-			  <br><br><b>Вид деятельности</b><br>
+        <input type="radio" value="all" name="which"checked> Все проекты
+
+			  <div class="form-floating">
+						<select class="form-select" id="specificity-field" name="specificity">
+								<option value="" selected>Все</option>
+								<option value="null">Без указания</option>
+							  {% for spec_value, spec_name in specificities.items %}
+    								<option value="{{spec_value|slice:":-11"}}">{{ spec_name }}</option>
+							  {% endfor %}
+						</select>
+						<label for="specificity-field">Вид деятельности</label>
+				</div>
+
 			  <b>Принимаемое вторсырьё</b><br>
 			  <b>Производимые ресурсы</b><br>
 		</form>
@@ -138,10 +192,6 @@
 						}
 				}
 
-				let projects = JSON.parse(document.getElementById('projects_json').textContent);
-				let points = JSON.parse(document.getElementById('points_json').textContent);
-				add_points(points);
-
 				/* Всплывашки :) */
 
         var container = document.getElementById('popup');
@@ -152,7 +202,7 @@
             element: container,
             autoPan: true,
             autoPanAnimation: {
-                duration: 250,
+                duration: 125,
             },
         });
         map.addOverlay(popup_overlay);
@@ -165,10 +215,6 @@
 
         map.on('singleclick', function(event) {
             content.innerHTML = '';
-            let resolution = map_view.getResolution();
-            console.log(resolution);
-            console.log(event.coordinate);
-
             let features = [];
             map.forEachFeatureAtPixel(event.pixel, function(feature, layer) {
 								features.push(feature);
@@ -177,8 +223,8 @@
 						    let feature = features[0];
 								let project_id = feature.getId().split('-')[1];
 								let project = projects[project_id];
-								console.log([project_id, project, feature]);
-								content.innerHTML = '<b>'+project.title+'</b><br><br><a href="test" target="_blank">Подробнее</a>';
+								let url = '/project/' + project_id;
+								content.innerHTML = '<b>'+project.title+'</b><br><br><a href="'+url+'" target="_blank">Подробнее</a>';
 								popup_overlay.setPosition(event.coordinate);
 						} else {
 						    popup_overlay.setPosition(undefined);
@@ -187,14 +233,20 @@
 
         /* Обновление точек */
 
-				map.on('moveend', function(event) {
+        function update_points(event) {
 				    let polygon = map.getView().calculateExtent(map.getSize());
 				    console.log(polygon);
 				    point_left_bottom = ol.proj.transform([polygon[0], polygon[1]], 'EPSG:3857', 'EPSG:4326');
 				    point_right_top = ol.proj.transform([polygon[2], polygon[3]], 'EPSG:3857', 'EPSG:4326');
 				    polygon = [point_left_bottom[0], point_left_bottom[1], point_right_top[0], point_right_top[1]];
 				    console.log(polygon);
-				    data = {filter: {which: filter_form.which.value}, polygon: polygon}
+				    data = {
+				        filter: {
+				            which: filter_form.which.value,
+				            specificity: filter_form.specificity.value,
+				        },
+				        polygon: polygon,
+				    }
 				    $.ajax({
 								url: window.location.href + 'get_points/',
 								headers: {'X-CSRFToken': CSRF_TOKEN},
@@ -216,7 +268,9 @@
 								},
 								method:'post',
 						});
-				});
+				}
+
+				map.on('moveend', update_points);
 		</script>
 
 {% endblock %}
