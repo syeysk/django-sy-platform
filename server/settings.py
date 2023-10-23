@@ -151,10 +151,6 @@ MICROSERVICES_URLS = {
 
 # for GeoDjango
 
-# gdal_library_path = env('GDAL_LIBRARY_PATH')
-# if gdal_library_path:
-#     GDAL_LIBRARY_PATH = str(BASE_DIR / gdal_library_path)
-
-GDAL_LIBRARY_PATH = str(BASE_DIR / 'venv/Lib/site-packages/osgeo/gdal304.dll')
-GEOS_LIBRARY_PATH = str(BASE_DIR / 'venv/Lib/site-packages/osgeo/geos_c.dll')
-SPATIALITE_LIBRARY_PATH = 'mod_spatialite'
+GDAL_LIBRARY_PATH = env('GDAL_LIBRARY_PATH')
+GEOS_LIBRARY_PATH = env('GEOS_LIBRARY_PATH')
+SPATIALITE_LIBRARY_PATH = env('SPATIALITE_LIBRARY_PATH')
