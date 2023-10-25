@@ -14,4 +14,4 @@ services:
       - "8001:8000"
     volumes:
       - .:/app
-      - /usr/share/nginx/html/django-sy-platform:/static
+      - /usr/share/nginx/html/django-sy-platform/static:/static
