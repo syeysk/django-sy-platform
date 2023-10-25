@@ -93,95 +93,9 @@
 
 У всех людей общее пространство, каждый человек может иметь площади под разные потребности (разные бизнесы, НКО, например)
 
-## Перед запуском на Windows
+## Установка
 
-### Изменения в `settings.py`
-
-1. В `INSTALLED_APPS` добавить `django.contrib.gis`
-1. В `DATABASES` заменить на  `jango.contrib.gis.db.backends.spatialite`
-
-### Установка GDAL
-
-1. Скачать `GDAL-3.4.3-cp311-cp311-win_amd64.whl` из https://www.lfd.uci.edu/~gohlke/pythonlibs/#gdal
-2. Установить: `pip install GDAL-3.4.3-cp311-cp311-win_amd64.whl`
-3. В `settings.py` добавить:
-    - `GDAL_LIBRARY_PATH = str(BASE_DIR / 'venv/Lib/site-packages/osgeo/gdal304.dll')`
-    - `GEOS_LIBRARY_PATH = str(BASE_DIR / 'venv/Lib/site-packages/osgeo/geos_c.dll')`
-
-Источники:
-- https://opensourceoptions.com/how-to-install-gdal-for-python-with-pip-on-windows/
-
-### Установка Spatialite
-
-1. Скачать `mod_spatialite-5.1.0-win-amd64.7z` из http://www.gaia-gis.it/gaia-sins/windows-bin-amd64/
-2. Извлечь все *.dll в `venv/Scripts`
-3. В `settings.py` добавить: `SPATIALITE_LIBRARY_PATH = 'mod_spatialite'`
-
-Источники:
-- https://docs.djangoproject.com/en/4.2/ref/contrib/gis/install/spatialite/
-- https://stackoverflow.com/questions/39787700/unable-to-locate-the-spatialite-library-django
-
-
-## Запуск на Windows
-
-Скачивание репозитория:
-
-```sh
-git clone https://github.com/syeysk/django-sy-platform
-```
-
-Установка зависимостей:
-
-```sh
-pip install -r requirements.txt
-```
-
-Применение миграций:
-
-```sh
-python manage.py migrate
-```
-
-Сбор статических файлов:
-
-```sh
-python manage.py collectstatic
-```
-
-
-Заполнить переменные окружения, добавив и заполнив файл `.env`
-
-Запуск сервера:
-
-```sh
-python manage.py runserver 8001
-```
-
-## Запуск на Linux
-
-Скачивание репозитория:
-
-```sh
-git clone https://github.com/syeysk/django-sy-platform
-```
-
-Сборка образа:
-
-```sh
-docker-compose build
-```
-
-Развёртывание и запуск контейнера
-
-```sh
-docker-compose down -d
-```
-
-## Проверка доступности сервера
-
-<http://127.0.0.1:8000/project>
-
-HTTP/2 200 возвращает JSON ответ.
+[INSTALL](Установка)
 
 ## API сервера
 
