@@ -107,4 +107,4 @@ server {
 ```
 
 Дополнительно:
-- [https://www.nginx.com/blog/using-free-ssltls-certificates-from-lets-encrypt-with-nginx/](Получение сертификата для домена) - поправка: возможно, на Вашем сервере нужно вместо команды `python` использовать `python3`
+- [Получение сертификата для домена](https://www.nginx.com/blog/using-free-ssltls-certificates-from-lets-encrypt-with-nginx/) - поправка: возможно, на Вашем сервере нужно вместо команды `python` использовать `python3`
