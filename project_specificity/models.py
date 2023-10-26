@@ -47,8 +47,8 @@ class CompostSpecificity(BaseSpecificityModel):
     project = GenericRelation(Project, related_query_name='compost')
 
     class Meta:
-        verbose_name = 'Компостирование'
-        verbose_name_plural = 'Компосты'
+        verbose_name = 'Компостный друг | Червеферма'
+        verbose_name_plural = 'Компостные друзья | Червефермы'
 
 
 class ProdcoopSpecificity(BaseSpecificityModel):
@@ -65,6 +65,54 @@ class ConsumercoopSpecificity(BaseSpecificityModel):
     class Meta:
         verbose_name = 'Потребительский кооператив'
         verbose_name_plural = 'Потребительские кооперативы'
+
+
+class CoopeaterySpecificity(BaseSpecificityModel):
+    project = GenericRelation(Project, related_query_name='coopeatery')
+
+    class Meta:
+        verbose_name = 'Кооперативная столовая'
+        verbose_name_plural = 'Кооперативные столовые'
+
+
+class CoopgardenSpecificity(BaseSpecificityModel):
+    project = GenericRelation(Project, related_query_name='coopgarden')
+
+    class Meta:
+        verbose_name = 'Кооп. теплиц., огород, сад'
+        verbose_name_plural = 'Кооп. теплицы., огороды, сады'
+
+
+class CoworkingSpecificity(BaseSpecificityModel):
+    project = GenericRelation(Project, related_query_name='coworking')
+
+    class Meta:
+        verbose_name = 'Открытая мастерская'
+        verbose_name_plural = 'Открытые мастерские'
+
+
+class PeoplecampingSpecificity(BaseSpecificityModel):
+    project = GenericRelation(Project, related_query_name='peoplecamping')
+
+    class Meta:
+        verbose_name = 'Народная база отдыха'
+        verbose_name_plural = 'Народные базы отдыха'
+
+
+class EcocenterSpecificity(BaseSpecificityModel):
+    project = GenericRelation(Project, related_query_name='ecocenter')
+
+    class Meta:
+        verbose_name = 'Экоцентр | Приём вторсырья'
+        verbose_name_plural = 'Экоцентры | Приём вторсырья'
+
+
+class ColivingSpecificity(BaseSpecificityModel):
+    project = GenericRelation(Project, related_query_name='coliving')
+
+    class Meta:
+        verbose_name = 'Коливинг'
+        verbose_name_plural = 'Коливинги'
 
 
 def get_specificities():
