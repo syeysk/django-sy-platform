@@ -3,7 +3,13 @@ FieldEditorComponent = {
     data() {
         return {mIsEdit: this.isEdit, errorMessage: '', prevValue: '', has_access_to_edit: HAS_ACCESS_TO_EDIT,};
     },
-    components: {FieldInputComponent, FieldTextareaComponent, TeleportToHeaderComponent, FieldMapComponent},
+    components: {
+        FieldInputComponent,
+        FieldTextareaComponent,
+        TeleportToHeaderComponent,
+        FieldMapComponent,
+        ViewMapComponent,
+    },
     emits: ['update:modelValue', 'save'],
     computed: {
         value: {
@@ -42,7 +48,7 @@ FieldEditorComponent = {
 						</div>
         </div>
         <div v-else>
-            <component :is="nameViewerComponent">
+            <component :is="nameViewerComponent" :value="modelValue">
                 <slot/>
                 <span v-if="!value">[[verboseName]] отсутствует</span>
                 <span @click="set_edit" class="btn_edit" v-if="has_access_to_edit">edit</span>

@@ -48,14 +48,15 @@
 		</script>
 
     <script>
-        TeleportToHeaderComponent = {template: `<teleport to="h1"><slot/></teleport>`};
+        TeleportToHeaderComponent = {props: ['value'], template: `<teleport to="h1"><slot/></teleport>`};
     </script>
 
     <script src="{% static 'project/window-component.js' %}"></script>
     <script src="{% static 'project/field-input-component.js' %}?v=1"></script>
     <script src="{% static 'project/field-textarea-component.js' %}?v=1"></script>
     <script src="{% static 'project/field-map-component.js' %}?v=7"></script>
-    <script src="{% static 'project/field-editor-component.js' %}?v=6"></script>
+    <script src="{% static 'project/view-map-component.js' %}?v=1"></script>
+    <script src="{% static 'project/field-editor-component.js' %}?v=9"></script>
     <script src="{% static 'project/news-component.js' %}?v=1"></script>
     <script src="{% static 'project/news-block-component.js' %}?v=2"></script>
 
@@ -235,7 +236,7 @@
 				}
  		</script>
 
-    <script src="{% static 'project/project-component.js' %}?v=10"></script>
+    <script src="{% static 'project/project-component.js' %}?v=11"></script>
 
     <script>
         const { createApp } = Vue;

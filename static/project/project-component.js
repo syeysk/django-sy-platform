@@ -160,7 +160,7 @@ ProjectComponent = {
 										>[[ description ]]</field-editor-component>
 										<field-editor-component
 												name-editor-component="field-map-component"
-												name-viewer-component="div"
+												name-viewer-component="view-map-component"
 												v-model="geoPoints"
 												name="geo_points"
 												:disabled="isNew"
