@@ -65,7 +65,10 @@ class GetPointsView(APIView):
             points_serialized.append(
                 {'point': list(point.point), 'project_id': point.project.pk}
             )
-            projects_data[point.project.pk] = {'title': point.project.title}
+            projects_data[point.project.pk] = {
+                'title': point.project.title,
+                'short_description': point.project.short_description,
+            }
 
         response_data = {
             'which': which,

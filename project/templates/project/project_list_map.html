@@ -224,7 +224,7 @@
 								let project_id = feature.getId().split('-')[1];
 								let project = projects[project_id];
 								let url = '/project/' + project_id;
-								content.innerHTML = '<b>'+project.title+'</b><br><br><a href="'+url+'" target="_blank">Подробнее</a>';
+								content.innerHTML = '<b>'+project.title+'</b><br>'+project.short_description+'<br><a href="'+url+'" target="_blank">Подробнее</a>';
 								popup_overlay.setPosition(event.coordinate);
 						} else {
 						    popup_overlay.setPosition(undefined);
