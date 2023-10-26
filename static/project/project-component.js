@@ -19,7 +19,7 @@ ProjectComponent = {
 						shortDescriptionVerboseName: SHORT_DESCRIPTION_VERBOSE_NAME,
 						descriptionVerboseName: DESCRIPTION_VERBOSE_NAME,
 						has_access_to_edit: HAS_ACCESS_TO_EDIT,
-						geoPoints: project_object.geo_points,//[[38.90976381181011, 45.08744925143691], [38.95361336351374,45.077847139134434]],
+						geoPoints: isNew ? [] : project_object.geo_points,
 				};
 		},
 		methods: {
