@@ -167,7 +167,6 @@ ProjectComponent = {
 												:is-edit="false"
 												@save="save_project"
 												verbose-name="Местоположения"
-												:title="isNew ? 'Пожалуйста, заполните и сохраните название проекта' : ''"
 												:show-cancel-btn="!isNew"
 										>Всего местоположений: [[ geoPoints.length ]]</field-editor-component>
 								</form>

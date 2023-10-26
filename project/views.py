@@ -103,11 +103,17 @@ class ProjectListView(View):
 class ProjectView(View):
     def get(self, request, pk=None):
         fields = {field.name: field for field in Project._meta.get_fields(include_parents=False)}
+        specificities = get_specificities()
         if not pk:
             if not request.user.is_authenticated:
                 return render(request, '401.html')
 
-            context = {'project': None, 'fields': fields}
+            context = {
+                'project': None,
+                'specificities': specificities,
+                'fields': fields,
+                'has_access_to_edit': True,
+            }
             return render(request, 'project/project_editor.html', context)
 
         project = Project.objects.filter(pk=pk).first()
@@ -141,7 +147,7 @@ class ProjectView(View):
                 'geo_points': [list(point) for point in project.geo_points.values_list('point', flat=True)],
             },
             'compost_input_resources': tuple(CompostInputResourceSpecificity.objects.values_list('id', 'name')),
-            'specificities': get_specificities(),
+            'specificities': specificities,
             'fields': fields,
             'has_access_to_edit': request.user.is_authenticated and request.user == project.created_by,
         }
