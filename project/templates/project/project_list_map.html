@@ -175,6 +175,12 @@
 				let point_layer = new ol.layer.VectorImage({
 						source: vector_source,
 						title: 'Проект',
+						style: new ol.style.Style({
+								image: new ol.style.Icon({
+										anchor: [0.5, 1],
+										src: STATIC_URL + 'project/marker.svg',
+  				      }),
+						}),
 				});
 				map.addLayer(point_layer);
 
@@ -234,11 +240,9 @@
 
         function update_points(event) {
 				    let polygon = map.getView().calculateExtent(map.getSize());
-				    console.log(polygon);
 				    point_left_bottom = ol.proj.transform([polygon[0], polygon[1]], 'EPSG:3857', 'EPSG:4326');
 				    point_right_top = ol.proj.transform([polygon[2], polygon[3]], 'EPSG:3857', 'EPSG:4326');
 				    polygon = [point_left_bottom[0], point_left_bottom[1], point_right_top[0], point_right_top[1]];
-				    console.log(polygon);
 				    data = {
 				        filter: {
 				            which: filter_form.which.value,
@@ -254,7 +258,6 @@
 								processData: false,
 								data: JSON.stringify(data),
 								success: function(result) {
-								    console.log(result);
                     vector_source.clear();
 								    window.projects = result.projects;
 								    add_points(result.points);
