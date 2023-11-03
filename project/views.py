@@ -2,7 +2,7 @@ from django.contrib.gis.geos import Point, Polygon
 from django.core.paginator import Paginator
 from django.db.models import Q
 from django.http import Http404
-from django.shortcuts import get_object_or_404, render
+from django.shortcuts import get_object_or_404, render, redirect
 from django.views import View
 from requests.exceptions import ConnectionError
 from rest_framework.response import Response
@@ -109,7 +109,7 @@ class ProjectView(View):
         specificities = get_specificities()
         if not pk:
             if not request.user.is_authenticated:
-                return render(request, '401.html')
+                return redirect('custom_login_page')
 
             context = {
                 'project': None,
