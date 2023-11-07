@@ -1,7 +1,6 @@
 {% extends 'base/base.html' %}
 {% load static %}
 
-{% block menu_microservice_name %}Платформа{% endblock %}
 {% block site_title %}Платформа{% endblock %}
 {% block start_of_head %}
     <link rel="apple-touch-icon" sizes="180x180" href="{% static 'apple-touch-icon.png' %}">
@@ -13,10 +12,6 @@
     <meta name="msapplication-TileColor" content="#da532c">
     <meta name="msapplication-config" content="{% static 'browserconfig.xml' %}">
     <meta name="theme-color" content="#ffffff">
-{% endblock %}
-{% block menu_items_microservice %}
-    {% include "base/menu_items_microservice.html" with url_name="project_list" url_title="Проекты списком" %}
-    {% include "base/menu_items_microservice.html" with url_name="project_list_map" url_title="Проекты на карте" %}
 {% endblock %}
 {% block source_code_link %}
     <a href="https://github.com/syeysk/django-sy-platform" target="_blank">GitHub</a>

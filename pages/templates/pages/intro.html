@@ -6,39 +6,102 @@
 {% endblock %}
 
 {% block keywords %}
-проекты, размещение проектов на карте, описк проектов
+проекты, размещение проектов на карте, поиск проектов
 {% endblock %}
 
 {% block title %}Платформа межкомандного взаимодействия{% endblock %}
 {% block page_title %}Главная страница{% endblock %}
 
+{% block start_of_head %}
+    {{ block.super }}
+    <style>
+    .tiles {
+        display: flex;
+				flex-direction: row;
+				justify-content: space-evenly;
+				flex-wrap: wrap;
+		}
+    .menu-tile {
+        width: 150px;
+        height: 150px;
+        display: inline-block;
+        border-radius: 12px;
+        border: solid 2px darkviolet;
+        text-align: center;
+        margin-bottom: 30px;
+        overflow: hidden;
+    }
+    .menu-tile a {
+        text-decoration: none;
+    }
+    .tile-body {
+        display: flex;
+				flex-direction: column;
+				justify-content: center;
+        height: 70%;
+        font-size: 18pt;
+        font-weight: 600;
+    }
+    .tile-footer {
+        display: flex;
+				flex-direction: column;
+				justify-content: center;
+        height: 30%;
+        background: darkviolet;
+    }
+    .tile-footer a {
+        color: white;
+    }
+    </style>
+{% endblock %}
+
 {% block content %}
-<p>
-Единое цифровое пространство, способствующее развитию Ваших проектов:
-</p>
 
-<ul>
-    <li>Ведите <a href="https://cachebrain.fun" target="_blank">базу знаний</a> Вашего проекта, сохраняя идеи и опыт участников</li>
-    <li>Проводите <a href="https://solveit.fun" target="_blank">продуктивные встречи</a>, фиксируя принятые на ней решения</li>
-    <li>Объединяйте <a href="{% url 'project_list' %}" target="_blank">вокруг Вашего проекта</a> разнородные данные</li>
-</ul>
+		{% if not request.user.is_authenticated %}
+				<p>
+				Единое цифровое пространство, способствующее развитию Ваших проектов:
+				</p>
 
-<p>Цели Платформы:</p>
+				<ul>
+						<li>Ведите <a href="https://cachebrain.fun" target="_blank">базу знаний</a> Вашего проекта, сохраняя идеи и опыт участников</li>
+						<li>Проводите <a href="https://solveit.fun" target="_blank">продуктивные встречи</a>, фиксируя принятые на ней решения</li>
+						<li>Объединяйте <a href="{% url 'project_list' %}" target="_blank">вокруг Вашего проекта</a> разнородные данные</li>
+				</ul>
 
-<ul>
-    <li>Уменьшить время производства и доставки необходимых для Вашего проекта ресурсов (запчасти, сырьё)</li>
-    <li>Повысить интенсивность обмена опытом и знаниями между командами разных проектов</li>
-    <li>Позволить освежать знания о технологических наработках, полученными другими командами сегодня</li>
-    <li>Моментально возвращать в оборот вторичное сырьё путём его использования в проектах (напрямую или через переработку)</li>
-</ul>
+				<p>Цели Платформы:</p>
 
-<p style="text-align: center;">
-  	<a href="{% url 'project_create' %}" rel="nofollow"><button class="btn btn-primary">Начать вести Ваш проект на Платформе</button></a>
-</p>
+				<ul>
+						<li>Уменьшить время производства и доставки необходимых для Вашего проекта ресурсов (запчасти, сырьё)</li>
+						<li>Повысить интенсивность обмена опытом и знаниями между командами разных проектов</li>
+						<li>Позволить освежать знания о технологических наработках, полученными другими командами сегодня</li>
+						<li>Моментально возвращать в оборот вторичное сырьё путём его использования в проектах (напрямую или через переработку)</li>
+				</ul>
+		{% endif %}
 
-<p>
-  <b>Внимание!</b> Контент, создаваемый на данном веб-сервисе, является доступным, в том числе и незарегистрированным посетителям.
-  Пожалуйста, создавайте только такой контент, который считаете/является допустимым для публикации в открытый доступ.
-</p>
+		<div class="tiles">
+				<div class="menu-tile">
+						<div class="tile-body">
+								<a href="{% url 'project_list' %}">Проекты</a>
+						</div>
+						<div class="tile-footer">
+								<a href="{% url 'project_list' %}?which=my">Мои</a>
+						</div>
+				</div>
+				<div class="menu-tile">
+						<div class="tile-body">
+								<a href="{% url 'project_list_map' %}">Карта проектов</a>
+						</div>
+				</div>
+				<div class="menu-tile">
+							<div class="tile-body">
+									<a href="{% url 'project_create' %}" rel="nofollow">Добавить<br><span style="font-size: 14pt;">свой проект</span></a>
+							</div>
+				</div>
+		</div>
+
+		<p>
+			<b>Внимание!</b> Контент, создаваемый на данном веб-сервисе, является доступным, в том числе и незарегистрированным посетителям.
+			Пожалуйста, создавайте только такой контент, который считаете/является допустимым для публикации в открытый доступ.
+		</p>
 
 {% endblock %}
