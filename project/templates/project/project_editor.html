@@ -1,8 +1,12 @@
 {% extends 'template.html' %}
 {% load static %}
 
-{% block title %}{% endblock %}
-{% block page_title %}Проект | {{ project.title }}{% endblock %}
+{% block keywords %}{% if project %}{{ project.seo_keywords }}{% endif %}{% endblock %}
+{% block description %}{% if project %}{{ project.seo_description }}{% endif %}{% endblock %}
+
+{% block site_title %}Проект{% endblock %}
+{% block title %}{% if project %}{{ project.title }}{% endif %}{% endblock %}
+{% block page_title %}{% if project %}{{ project.title }}{% else %}Новый проект{% endif %}{% endblock %}
 
 {% block start_of_head %}
     {{ block.super }}
@@ -24,14 +28,19 @@
         }
         h4 {
             padding: 15px 0 15px 0;
-            /*text-align: center;*/
         }
     </style>
 
     {{ project|json_script:'project_json' }}
     {{ specificities|json_script:'specificities_json' }}
     {{ compost_input_resources|json_script:'compost_input_resources_json' }}
-    <div id="app_project_id"></div>
+    <div id="app_project_id">
+			  {% if project %}
+			      <p>Вид деятельности: {{ project.specificity_text_for_seo }}</p>
+			      <p>{{ project.short_description }}</p>
+			      <p>{{ project.description }}</p>
+			  {% endif %}
+		</div>
 {% endblock %}
 
 {% block end_of_body %}
@@ -83,160 +92,10 @@
 		</script>
 
     <script src="{% static 'project/linker-component.js' %}?v=1"></script>
-
-    <script>
-        SpecificityWebportalComponent = {
-            props: ['object'],
-            components: {FieldInputComponent},
-            data() {
-                if (this.object.url == undefined) {
-                    this.object.url = '';
-                }
-                return {has_access_to_edit: HAS_ACCESS_TO_EDIT}
-            },
-            template: `
-                <div v-if="has_access_to_edit">
-                    <field-input-component v-model="object.url" name="url">URL</field-input-component>
-                </div>
-                <ul v-else>
-                     <li>Ссылка: <a href="[[ object.url ]]">[[ object.url ]]</a></li>
-                </ul>
-            `
-        }
-    </script>
-
-    <script>
-        SpecificityCompostComponent = {
-            props: ['object'],
-            components: {WindowComponent},
-            data() {
-                if (this.object.resources == undefined) {
-                    this.object.resources = new Object();
-                }
-                let compost_input_resources = JSON.parse(
-								    document.getElementById('compost_input_resources_json').textContent,
-								);
-                return {
-                    compostInputResources: compost_input_resources,
-                    isDisplayResourcesWindow: false,
-                    has_access_to_edit: HAS_ACCESS_TO_EDIT,
-                };
-            },
-            template: `
-                <div v-if="has_access_to_edit">
-                    <input type="button" value="Указать принимаемое вторсырьё" class="btn btn-outline-secondary" @click="this.isDisplayResourcesWindow = true;">
-                    <window-component title="Выберите принимаемое вторсырьё" v-if="isDisplayResourcesWindow" @close="this.isDisplayResourcesWindow = false;">
-										    <div v-for="resource in compostInputResources" :key="resource[0]" class="resource-item" :data-id="resource[0]">
-												    <input type="checkbox" :value="resource[0]" :name="'input_resource[' +resource[0]+ ']'" @change="set_resource" :checked="object.resources[resource[0]]">
-												    <span>[[ resource[1] ]]</span>
-												    <br>
-												    <input type="text" :value="object.resources[resource[0]] ? object.resources[resource[0]]['comment'] : ''" :name="'input_resource_comment[' +resource[0]+ ']'" @change="set_comment" :disabled="!(object.resources[resource[0]])">
-    										</div>
-                    </window-component>
-                </div>
-                <div v-else>
-                    Принимаемое вторсырьё:
-                    <ul>
-                         <li v-for="resourceData, resourceId in object.resources" :key="resourceId">
-                             [[ resourceData.name ]] <span v-if="resourceData.comment"> - [[ resourceData.comment ]]</span>
-                         </li>
-                    </ul>
-                </div>
-            `,
-            methods: {
-                set_resource(event) {
-                    let checkbox = event.target;
-                    if (checkbox.checked) {
-                        let comment = checkbox.form['input_resource_comment[' +checkbox.value+ ']'].value;
-                        this.object.resources[checkbox.value] = {comment: comment};
-                    } else {
-                        this.object.resources[checkbox.value] = undefined;
-                    }
-                },
-                set_comment(event) {
-                    let comment = event.target.value;
-                    let resource_id = event.target.closest('.resource-item').dataset.id;
-                    let checkbox = event.target.form['input_resource[' +resource_id+ ']'];
-                    if (checkbox.checked) {
-                        this.object.resources[checkbox.value]['comment'] = comment;
-                    }
-                },
-            },
-        }
-    </script>
-
-    <script>
-				SpecificitiesComponent = {
-				    props: ['specificity', 'specificityData', 'isNew'],
-						data() {
-								let specificities = JSON.parse(document.getElementById('specificities_json').textContent);
-								return {
-										specificities: specificities,
-										mSpecificity: this.specificity,
-										badMessage: '',
-										has_access_to_edit: HAS_ACCESS_TO_EDIT,
-								};
-						},
-						components: {SpecificityWebportalComponent, SpecificityCompostComponent},
-						template: `
-						    <h4 v-if="!isNew && (mSpecificity || has_access_to_edit)">Вид деятельности<span v-if="!has_access_to_edit">: [[ specificities[mSpecificity] ]]</span></h4>
-						    <form v-if="!isNew && (mSpecificity || has_access_to_edit)">
-										<div class="form-floating" v-if="has_access_to_edit">
-												<select class="form-select" id="specificity-field" v-model="mSpecificity" name="specificity">
-												    <option value="null" :selected="!mSpecificity">Не выбрано</option>
-														<option :value="spec_value" v-for="(spec_name, spec_value) of specificities" :selected="mSpecificity == spec_name">[[ spec_name ]]</option>
-												</select>
-												<label for="specificity-field">Вид деятельности</label>
-										</div>
-										<component
-										    v-if="mSpecificity"
-										    :is="'Specificity'+mSpecificity[0].toUpperCase()+mSpecificity.slice(1, -11)+'Component'"
-										    :object="specificityData"
-										></component>
-										<div style="text-align: right;" v-if="has_access_to_edit">
-										    <br>
-										    <div v-if="badMessage">[[ badMessage ]]</div>
-										    <input type="button" value="Сохранить" class="btn btn-outline-secondary" @click="save">
-										</div>
-								</form>
-						`,
-						methods: {
-						    save(event) {
-						        let self = this;
-						        let form = event.target.form;
-						        $.ajax({
-                        url: window.location.href + URL_SAVE_SPECIFICITY,
-                        headers: {"X-CSRFToken": CSRF_TOKEN},
-                        dataType: 'json',
-                        contentType: 'application/json',
-                        processData: false,
-                        data: JSON.stringify({specificity: form.specificity.value, data: self.specificityData}),
-                        success: function(result) {
-                            self.badMessage = '';
-                            clear_status_fields(form);
-                            set_valid_field(form, result.updated_fields);
-                        },
-                        statusCode: {
-                            500: function(xhr) {
-                                self.badMessage = 'ошибка сервера'
-                            },
-                            400: function(xhr) {
-                                clear_status_fields(form);
-                                set_invalid_field(form, xhr.responseJSON);
-                                self.badMessage = '';
-                            },
-                            404: function(xhr) {
-                                self.badMessage = 'такой проект не существует'
-                            },
-                        },
-                        method: "post"
-                    });
-						    }
-						},
-				}
- 		</script>
-
-    <script src="{% static 'project/project-component.js' %}?v=12"></script>
+    <script src="{% static 'project/specificity-webportal-component.js' %}?v=1"></script>
+    <script src="{% static 'project/specificity-compost-component.js' %}?v=1"></script>
+    <script src="{% static 'project/specificities-component.js' %}?v=1"></script>
+    <script src="{% static 'project/project-component.js' %}?v=13"></script>
 
     <script>
         const { createApp } = Vue;

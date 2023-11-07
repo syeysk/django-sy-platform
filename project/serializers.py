@@ -12,11 +12,13 @@ class ProjectCreateSerializer(serializers.ModelSerializer):
 class ProjectUpdateSerializer(serializers.ModelSerializer):
     class Meta:
         model = Project
-        fields = ['title', 'short_description', 'description']
+        fields = ['title', 'short_description', 'description', 'seo_keywords', 'seo_description']
         extra_kwargs = {
             'title': {'required': False},
             'short_description': {'required': False},
             'description': {'required': False},
+            'seo_keywords': {'required': False},
+            'seo_description': {'required': False},
         }
 
 

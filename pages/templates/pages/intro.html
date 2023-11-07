@@ -34,13 +34,18 @@
     .menu-tile a {
         text-decoration: none;
     }
+    .menu-tile img {
+        width: 55%;
+    }
     .tile-body {
         display: flex;
 				flex-direction: column;
 				justify-content: center;
+				align-items: center;
         height: 70%;
-        font-size: 18pt;
-        font-weight: 600;
+        font-size: 16pt;
+        font-weight: 700;
+        text-transform: uppercase;
     }
     .tile-footer {
         display: flex;
@@ -88,14 +93,18 @@
 						</div>
 				</div>
 				<div class="menu-tile">
-						<div class="tile-body">
-								<a href="{% url 'project_list_map' %}">Карта проектов</a>
-						</div>
+						<a class="tile-body" href="{% url 'project_list_map' %}" style="height: 100%;">
+								<span>Карта</span>
+   							<img src="{% static 'project/intro_project_map.svg' %}">
+								<span style="font-size: 14pt;">проектов</span>
+ 						</a>
 				</div>
 				<div class="menu-tile">
-							<div class="tile-body">
-									<a href="{% url 'project_create' %}" rel="nofollow">Добавить<br><span style="font-size: 14pt;">свой проект</span></a>
-							</div>
+							<a class="tile-body" href="{% url 'project_create' %}" rel="nofollow" style="height: 100%;">
+									<span>Добавь</span>
+    							<img src="{% static 'project/intro_new_project.svg' %}">
+								  <span style="font-size: 13pt;">свой проект</span>
+							</a>
 				</div>
 		</div>
 

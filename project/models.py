@@ -15,6 +15,8 @@ class Project(models.Model):
     content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE, help_text='Специфика', null=True)
     object_id = models.PositiveIntegerField('ID специфики', null=True)
     content_object = GenericForeignKey()
+    seo_keywords = models.CharField('SEO ключевые слова', max_length=100, blank=True, default='')
+    seo_description = models.CharField('SEO-описание', max_length=200, blank=True, default='')
 
     class Meta:
         verbose_name = 'Проект'
