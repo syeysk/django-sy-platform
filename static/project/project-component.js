@@ -23,6 +23,7 @@ ProjectComponent = {
             descriptionVerboseName: DESCRIPTION_VERBOSE_NAME,
             has_access_to_edit: HAS_ACCESS_TO_EDIT,
             geoPoints: isNew ? [] : project_object.geo_points,
+            contacts: isNew ? [] : project_object.contacts,
         };
     },
     methods: {
@@ -188,6 +189,19 @@ ProjectComponent = {
                         :title="isNew ? 'Пожалуйста, заполните и сохраните название проекта' : ''"
                         :show-cancel-btn="!isNew"
                     >[[ seo_description ]]</field-editor-component>
+                    <br>
+                    <field-editor-component
+                        name-editor-component="field-contact-component"
+                        name-viewer-component="div"
+                        v-model="contacts"
+                        name="contacts"
+                        :disabled="isNew"
+                        :is-edit="isNew"
+                        @save="save_project"
+                        verbose-name="Контакты"
+                        :title="isNew ? 'Пожалуйста, заполните и сохраните название проекта' : ''"
+                        :show-cancel-btn="!isNew"
+                    >Всего контактов: [[ contacts.length ]]</field-editor-component>
                     <br>
                     <field-editor-component
                         name-editor-component="field-map-component"

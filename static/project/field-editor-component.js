@@ -9,6 +9,7 @@ FieldEditorComponent = {
         TeleportToHeaderComponent,
         FieldMapComponent,
         ViewMapComponent,
+        FieldContactComponent,
     },
     emits: ['update:modelValue', 'save'],
     computed: {

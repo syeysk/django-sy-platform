@@ -34,6 +34,7 @@
     {{ project|json_script:'project_json' }}
     {{ specificities|json_script:'specificities_json' }}
     {{ compost_input_resources|json_script:'compost_input_resources_json' }}
+    {{ contact_types|json_script:'contact_types_json' }}
     <div id="app_project_id">
 			  {% if project %}
 			      <p>Вид деятельности: {{ project.specificity_text_for_seo }}</p>
@@ -65,7 +66,8 @@
     <script src="{% static 'project/field-textarea-component.js' %}?v=1"></script>
     <script src="{% static 'project/field-map-component.js' %}?v=7"></script>
     <script src="{% static 'project/view-map-component.js' %}?v=1"></script>
-    <script src="{% static 'project/field-editor-component.js' %}?v=9"></script>
+    <script src="{% static 'project/field-contact-component.js' %}?v=1"></script>
+    <script src="{% static 'project/field-editor-component.js' %}?v=10"></script>
     <script src="{% static 'project/news-component.js' %}?v=1"></script>
     <script src="{% static 'project/news-block-component.js' %}?v=2"></script>
 

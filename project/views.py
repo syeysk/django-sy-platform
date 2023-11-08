@@ -5,13 +5,19 @@ from django.http import Http404
 from django.shortcuts import get_object_or_404, render, redirect
 from django.views import View
 from requests.exceptions import ConnectionError
+from rest_framework.exceptions import ValidationError
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework import status
 
 from django_sy_framework.utils.universal_api import API
-from project.models import Project, GeoPointProject
-from project.serializers import NewsAddSerializer, ProjectCreateSerializer, ProjectUpdateSerializer
+from project.models import ContactProject, Project, GeoPointProject
+from project.serializers import (
+    EditContactSerializer,
+    NewsAddSerializer,
+    ProjectCreateSerializer,
+    ProjectUpdateSerializer,
+)
 from project_specificity.models import CompostInputResourceSpecificity, get_specificities
 from project_specificity.serializers import get_serializer
 
@@ -151,11 +157,13 @@ class ProjectView(View):
                 'specificity': specificity,
                 'specificity_data': specificity_data,
                 'geo_points': [list(point) for point in project.geo_points.values_list('point', flat=True)],
+                'contacts': list(project.contacts.all().values()),
             },
             'compost_input_resources': tuple(CompostInputResourceSpecificity.objects.values_list('id', 'name')),
             'specificities': specificities,
             'fields': fields,
             'has_access_to_edit': request.user.is_authenticated and request.user == project.created_by,
+            'contact_types': dict(ContactProject.CONTACT_TYPE_CHOICES),
         }
         return render(request, 'project/project_editor.html', context)
 
@@ -184,6 +192,7 @@ class ProjectEditView(APIView):
                     q = Q(point=points[0])
                     for point in points[1:]:
                         q |= Q(point=point)
+
                     project.geo_points.filter(q).delete()
 
             serializer = ProjectUpdateSerializer(project, data=request.data)
@@ -221,3 +230,47 @@ class NewsAddView(APIView):
         project_news = serializer.save(created_by=user, project=project)
         response_data = {'dt_create': project_news.dt_create.strftime(NEWS_DATE_FORMAT), 'id': project_news.pk}
         return Response(status=status.HTTP_200_OK, data=response_data)
+
+
+class EditContactView(APIView):
+    def post(self, request, project_pk, contact_pk=None):
+        if not request.user.is_authenticated:
+            return Response(status=status.HTTP_401_UNAUTHORIZED)
+
+        response_data = {}
+        if contact_pk:
+            contact = ContactProject.objects.filter(project__pk=project_pk, pk=contact_pk).first()
+            if not contact:
+                raise ValidationError({'non-field-error': ['не найден контакт']})
+
+            project = contact.project
+
+            serializer = EditContactSerializer(contact, data=request.data)
+            serializer.is_valid(raise_exception=True)
+            response_data['updated_fields'] = [
+                name for name, value in serializer.validated_data.items() if getattr(contact, name) != value
+            ]
+        else:
+            project = Project.objects.filter(pk=project_pk).first()
+            if not project:
+                raise ValidationError({'non-field-error': ['не найден контакт']})
+
+            serializer = EditContactSerializer(data=request.data)
+            serializer.is_valid(raise_exception=True)
+            response_data['updated_fields'] = ['sign', 'value', 'contact_type']
+
+        serializer.save(project=project)
+        response_data['pk'] = serializer.instance.pk
+        return Response(status=status.HTTP_200_OK, data=response_data)
+
+
+class DeleteContactView(APIView):
+    def post(self, request, project_pk, contact_pk):
+        if not request.user.is_authenticated:
+            return Response(status=status.HTTP_401_UNAUTHORIZED)
+
+        count, _ = ContactProject.objects.filter(project__pk=project_pk, pk=contact_pk).delete()
+        if not count:
+            return Response(status=status.HTTP_404_NOT_FOUND)
+
+        return Response(status=status.HTTP_200_OK)

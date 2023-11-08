@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from project.models import Project, ProjectNews
+from project.models import ContactProject, Project, ProjectNews
 
 
 class ProjectCreateSerializer(serializers.ModelSerializer):
@@ -26,3 +26,9 @@ class NewsAddSerializer(serializers.ModelSerializer):
     class Meta:
         model = ProjectNews
         fields = ['title', 'text']
+
+
+class EditContactSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ContactProject
+        fields = ['sign', 'value', 'contact_type']

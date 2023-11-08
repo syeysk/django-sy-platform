@@ -40,3 +40,28 @@ class ProjectNews(DatetimeMixin, models.Model):
 class GeoPointProject(gis_models.Model):
     project = models.ForeignKey(Project, on_delete=models.CASCADE, related_name='geo_points')
     point = gis_models.PointField(verbose_name='Позиция на карте')
+
+
+class ContactProject(models.Model):
+    CONTACT_TYPE_OTHER = 1
+    CONTACT_TYPE_PHONE = 2
+    CONTACT_TYPE_EMAIL = 3
+    CONTACT_TYPE_WEBSITE = 4
+    CONTACT_TYPE_TELEGRAM = 5
+    CONTACT_TYPE_DISCORD = 6
+    CONTACT_TYPE_CHOICES = (
+        (CONTACT_TYPE_OTHER, 'Другое'),
+        (CONTACT_TYPE_PHONE, 'Телефон'),
+        (CONTACT_TYPE_EMAIL, 'Электронная почта'),
+        (CONTACT_TYPE_WEBSITE, 'Вебсайт',),
+        (CONTACT_TYPE_TELEGRAM, 'Телеграм'),
+        (CONTACT_TYPE_DISCORD, 'Дискорд'),
+    )
+    project = models.ForeignKey(Project, on_delete=models.CASCADE, related_name='contacts')
+    sign = models.CharField('Наименование контакта', max_length=100, blank=True)
+    value = models.CharField('Значение', max_length=100, blank=False)
+    contact_type = models.IntegerField('Тип контакта', blank=False, choices=CONTACT_TYPE_CHOICES)
+
+    class Meta:
+        verbose_name = 'Контакт проекта'
+        verbose_name_plural = 'Контакты проекта'
