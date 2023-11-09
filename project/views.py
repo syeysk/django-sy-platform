@@ -113,6 +113,7 @@ class ProjectView(View):
     def get(self, request, pk=None):
         fields = {field.name: field for field in Project._meta.get_fields(include_parents=False)}
         specificities = get_specificities()
+        contact_types = dict(ContactProject.CONTACT_TYPE_CHOICES)
         if not pk:
             if not request.user.is_authenticated:
                 return redirect('custom_login_page')
@@ -120,6 +121,7 @@ class ProjectView(View):
             context = {
                 'project': None,
                 'specificities': specificities,
+                'contact_types': contact_types,
                 'fields': fields,
                 'has_access_to_edit': True,
             }
@@ -163,7 +165,7 @@ class ProjectView(View):
             'specificities': specificities,
             'fields': fields,
             'has_access_to_edit': request.user.is_authenticated and request.user == project.created_by,
-            'contact_types': dict(ContactProject.CONTACT_TYPE_CHOICES),
+            'contact_types': contact_types,
         }
         return render(request, 'project/project_editor.html', context)
 
