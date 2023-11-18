@@ -133,6 +133,7 @@ class ProjectView(View):
 
         json_data_faci = {'object': 'faci', 'fields': ['id', 'aim'], 'extra_fields': ['url']}
         json_data_note = {'object': 'note', 'fields': ['id', 'title'], 'extra_fields': ['url'], 'order_by': ['title']}
+        json_data_resource = {'object': 'resource', 'fields': ['id', 'title'], 'extra_fields': ['url'], 'order_by': ['title']}
         news = []
         for new in project.news.order_by('-dt_create').values('pk', 'title', 'text', 'dt_create'):
             new['dt_create'] = new['dt_create'].strftime(NEWS_DATE_FORMAT)
@@ -154,6 +155,7 @@ class ProjectView(View):
                 'created_by': project.created_by.username,
                 'facis': get_linked_object(project, API('1', 'faci'), json_data_faci, 'холстов'),
                 'notes': get_linked_object(project, API('1', 'note'), json_data_note, 'заметок'),
+                'resources': get_linked_object(project, API('1', 'resource'), json_data_resource, 'ресурсов'),
                 'news': news,
                 'specificity_text_for_seo': specificities[specificity] if specificity else 'Не указано',
                 'specificity': specificity,

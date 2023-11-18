@@ -16,6 +16,7 @@ ProjectComponent = {
             specificityData: isNew ? {} : project_object.specificity_data,
             facis: isNew ? {} : project_object.facis,
             notes: isNew ? {} : project_object.notes,
+            resources: isNew ? {} : project_object.resources,
             news: isNew ? [] : project_object.news,
             isNew: isNew,
             titleVerboseName: TITLE_VERBOSE_NAME,
@@ -201,7 +202,19 @@ ProjectComponent = {
                         verbose-name="Контакты"
                         :title="isNew ? 'Пожалуйста, заполните и сохраните название проекта' : ''"
                         :show-cancel-btn="!isNew"
-                    >Всего контактов: [[ contacts.length ]]</field-editor-component>
+                    >
+                        <button v-if="has_access_to_edit" class="btn btn-outline-secondary">Показать контакты</button>
+                        <span v-else>Всего контактов: [[ contacts.length ]]</span>
+                        <ul>
+                            <li v-for="contact in contacts">
+                                [[ contact.sign ]]:
+                                <a v-if="contact.contact_type == 4" :href="contact.value">[[ contact.value ]]</a>
+                                <a v-else-if="contact.contact_type == 2" :href="'tel:'+contact.value">[[ contact.value ]]</a>
+                                <a v-else-if="contact.contact_type == 3" :href="'mailto:'+contact.value">[[ contact.value ]]</a>
+                                <span v-else>[[ contact.value ]]</span>
+                            </li>
+                        </ul>
+                    </field-editor-component>
                     <br>
                     <field-editor-component
                         name-editor-component="field-map-component"
@@ -266,6 +279,17 @@ ProjectComponent = {
                     :error="notes.error"
                 ></linker-component>
 
+                <linker-component
+                    item="LinkerItemResourceComponent"
+                    title="Ресурсы"
+                    :objects="resources.objects"
+                    :num-pages="resources.num_pages"
+                    :page="resources.page"
+                    create-object-text="Добавить ресурс"
+                    :create-object-url="resources.url_new"
+                    :show-create-btn="!isNew"
+                    :error="resources.error"
+                ></linker-component>
             </div>
         </div>
     `,

@@ -136,11 +136,13 @@ EXTERN_AUTH = {
 MICROSERVICES_TOKENS = {
     'to_faci': env('MICROSERVICE_TOKEN_TO_FACI'),
     'to_note': env('MICROSERVICE_TOKEN_TO_NOTE'),
+    'to_resource': env('MICROSERVICE_TOKEN_TO_RESOURCE'),
 }
 MICROSERVICES_URLS = {
     'auth': env('MICROSERVICE_URL_AUTH'),
     'faci': env('MICROSERVICE_URL_FACI'),
     'note': env('MICROSERVICE_URL_NOTE'),
+    'resource': env('MICROSERVICE_URL_RESOURCE'),
 }
 
 

@@ -13,7 +13,7 @@ LinkerComponent = {
     data() {
        return {has_access_to_edit: HAS_ACCESS_TO_EDIT};
     },
-    components: {LinkerItemFaciComponent, LinkerItemNoteComponent},
+    components: {LinkerItemFaciComponent, LinkerItemNoteComponent, LinkerItemResourceComponent},
     template: `
         <h4>[[ title ]]</h4>
         <ul>

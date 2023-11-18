@@ -17,8 +17,8 @@ class WebportalSpecificity(BaseSpecificityModel):
     project = GenericRelation(Project, related_query_name='webportal')
 
     class Meta:
-        verbose_name = 'Разработка веб-портала'
-        verbose_name_plural = 'Веб-порталы'
+        verbose_name = 'Программное обеспечение'
+        verbose_name_plural = 'Программное обеспечение'
 
 
 class CompostInputResourceSpecificity(models.Model):

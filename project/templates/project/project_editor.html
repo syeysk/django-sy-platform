@@ -19,13 +19,6 @@
         .mb-3 {
             margin-bottom: 0 !important;
         }
-        .btn_edit {
-            font-size: 10px;
-            background-color: paleturquoise;
-            cursor: pointer;
-            padding: 2px 4px 2px 4px;
-            border-radius: 3px;
-        }
         h4 {
             padding: 15px 0 15px 0;
         }
@@ -62,14 +55,25 @@
     </script>
 
     <script src="{% static 'project/window-component.js' %}"></script>
-    <script src="{% static 'project/field-input-component.js' %}?v=1"></script>
+    <script src="{% static 'base/field-input-component.js' %}?v=1"></script>
     <script src="{% static 'project/field-textarea-component.js' %}?v=1"></script>
     <script src="{% static 'project/field-map-component.js' %}?v=7"></script>
     <script src="{% static 'project/view-map-component.js' %}?v=1"></script>
     <script src="{% static 'project/field-contact-component.js' %}?v=1"></script>
-    <script src="{% static 'project/field-editor-component.js' %}?v=10"></script>
+    <script src="{% static 'base/field-editor-component.js' %}?v=10"></script>
     <script src="{% static 'project/news-component.js' %}?v=1"></script>
     <script src="{% static 'project/news-block-component.js' %}?v=2"></script>
+
+    <script>
+			  FieldEditorComponent.components = {
+						FieldInputComponent,
+						FieldTextareaComponent,
+						TeleportToHeaderComponent,
+						FieldMapComponent,
+						ViewMapComponent,
+						FieldContactComponent,
+				}
+		</script>
 
     <script>
 			  LinkerItemFaciComponent = {
@@ -93,11 +97,22 @@
 			  }
 		</script>
 
+    <script>
+			  LinkerItemResourceComponent = {
+			      props: ['object'],
+			      template: `
+                <li>
+								    <a :href="object.url" target="_blank">[[object.title]]</a>
+							  </li>
+					  `,
+			  }
+		</script>
+
     <script src="{% static 'project/linker-component.js' %}?v=1"></script>
     <script src="{% static 'project/specificity-webportal-component.js' %}?v=1"></script>
     <script src="{% static 'project/specificity-compost-component.js' %}?v=1"></script>
     <script src="{% static 'project/specificities-component.js' %}?v=1"></script>
-    <script src="{% static 'project/project-component.js' %}?v=13"></script>
+    <script src="{% static 'project/project-component.js' %}?v=15"></script>
 
     <script>
         const { createApp } = Vue;
