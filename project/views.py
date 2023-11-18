@@ -1,16 +1,16 @@
+import syapi
+from django.conf import settings
 from django.contrib.gis.geos import Point, Polygon
 from django.core.paginator import Paginator
 from django.db.models import Q
 from django.http import Http404
 from django.shortcuts import get_object_or_404, render, redirect
 from django.views import View
-from requests.exceptions import ConnectionError
 from rest_framework.exceptions import ValidationError
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework import status
 
-from django_sy_framework.utils.universal_api import API
 from project.models import ContactProject, Project, GeoPointProject
 from project.serializers import (
     EditContactSerializer,
@@ -24,17 +24,13 @@ from project_specificity.serializers import get_serializer
 NEWS_DATE_FORMAT = '%d.%m.%Y %H:%M'
 
 
-def get_linked_object(project, api, json_data, verbose_name):
+def get_linked_object(project, link_what, json_data, verbose_name):
     error_json = {'error': f'ошибка получения {verbose_name} :('}
     try:
-        response = api.linker.project.post(f'/{project.pk}/', json=json_data)
-    except ConnectionError:
+        objects = syapi.Linker(link_what).get(project.pk, syapi.Project, **json_data)
+    except Exception:
         return error_json
 
-    if response.status_code != 200:
-        return error_json
-
-    objects = response.json()
     objects['url_new'] = '{}?link_to=project-{}'.format(objects['url_new'], project.pk)
     return objects
 
@@ -131,9 +127,6 @@ class ProjectView(View):
         if not project:
             raise Http404('Проект не найден')
 
-        json_data_faci = {'object': 'faci', 'fields': ['id', 'aim'], 'extra_fields': ['url']}
-        json_data_note = {'object': 'note', 'fields': ['id', 'title'], 'extra_fields': ['url'], 'order_by': ['title']}
-        json_data_resource = {'object': 'resource', 'fields': ['id', 'title'], 'extra_fields': ['url'], 'order_by': ['title']}
         news = []
         for new in project.news.order_by('-dt_create').values('pk', 'title', 'text', 'dt_create'):
             new['dt_create'] = new['dt_create'].strftime(NEWS_DATE_FORMAT)
@@ -145,6 +138,12 @@ class ProjectView(View):
             specificity_serializer = get_serializer(specificity)
             specificity_data = specificity_serializer(project.content_object).data if specificity_serializer else {}
 
+        json_data_faci = {'fields': ['id', 'aim'], 'extra_fields': ['url']}
+        json_data_note = {'fields': ['id', 'title'], 'extra_fields': ['url'], 'order_by': ['title']}
+        json_data_resource = {'fields': ['id', 'title'], 'extra_fields': ['url'], 'order_by': ['title']}
+        link_faci = syapi.Faci('no-token', url=settings.MICROSERVICES_URLS['faci'])
+        link_note = syapi.Note('no-token', url=settings.MICROSERVICES_URLS['note'])
+        link_resource = syapi.Resource('no-token', url=settings.MICROSERVICES_URLS['resource'])
         context = {
             'project': {
                 'title': project.title,
@@ -153,9 +152,9 @@ class ProjectView(View):
                 'seo_keywords': project.seo_keywords,
                 'seo_description': project.seo_description,
                 'created_by': project.created_by.username,
-                'facis': get_linked_object(project, API('1', 'faci'), json_data_faci, 'холстов'),
-                'notes': get_linked_object(project, API('1', 'note'), json_data_note, 'заметок'),
-                'resources': get_linked_object(project, API('1', 'resource'), json_data_resource, 'ресурсов'),
+                'facis': get_linked_object(project, link_faci, json_data_faci, 'холстов'),
+                'notes': get_linked_object(project, link_note, json_data_note, 'заметок'),
+                'resources': get_linked_object(project, link_resource, json_data_resource, 'ресурсов'),
                 'news': news,
                 'specificity_text_for_seo': specificities[specificity] if specificity else 'Не указано',
                 'specificity': specificity,
