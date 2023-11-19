@@ -36,6 +36,7 @@ INSTALLED_APPS = [
     'django_sy_framework.base',
     'django_sy_framework.custom_auth',
     'django_sy_framework.linker',
+    'django_sy_framework.token',
     'server',
     'pages',
     'project',
