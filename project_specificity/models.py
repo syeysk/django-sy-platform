@@ -115,6 +115,14 @@ class ColivingSpecificity(BaseSpecificityModel):
         verbose_name_plural = 'Коливинги'
 
 
+class CityfarmerSpecificity(BaseSpecificityModel):
+    project = GenericRelation(Project, related_query_name='cityfarmer')
+
+    class Meta:
+        verbose_name = 'Сити-ферма'
+        verbose_name_plural = 'Сити-ферма'
+
+
 def get_specificities():
     return {
         subclass.__name__.lower(): subclass._meta.verbose_name for subclass in BaseSpecificityModel.__subclasses__()

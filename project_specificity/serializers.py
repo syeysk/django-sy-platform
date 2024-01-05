@@ -67,7 +67,7 @@ class CompostSerializer(serializers.BaseSerializer):
                 instance.resources.filter(pk__in=resources_to_delete).delete()
 
             for resource_id, data in resources.items():
-                data.pop('name')
+                data.pop('name', '')
                 instance.resources.create(input_resource_id=resource_id, **data)
 
         return instance
