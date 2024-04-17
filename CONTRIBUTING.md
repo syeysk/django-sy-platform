@@ -1,4 +1,4 @@
-# Contributing to django_knowledge
+# Contributing to django-sy-platform
 
 ## Термины
 
@@ -13,7 +13,7 @@
 
     ```sh
     git init
-    git remote add origin https://github.com/ваш_аккаунт/django_knowledge
+    git remote add origin https://github.com/ваш_аккаунт/django-sy-platform
     git pull origin main
     ```
 
@@ -48,7 +48,7 @@
 
 ## Отправляем Pull Request
 
-1. После того, как в ветку `dev`  внесены и зафиксированы правки, переходим в ветку `main`  и вливаем в неё изменения из ветки `dev`:
+1. После того как в ветку `dev`  внесены и зафиксированы правки, переходим в ветку `main`  и вливаем в неё изменения из ветки `dev`:
 
     ```sh
     git checkout main
